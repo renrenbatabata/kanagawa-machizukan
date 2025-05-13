@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:frontend/screens/take_photo/take_photo_screen.dart';
 
 class SelectTargetScreen extends StatelessWidget {
   const SelectTargetScreen({super.key});
@@ -38,7 +39,12 @@ class SelectTargetScreen extends StatelessWidget {
                 label: 'おはな',
                 color: Colors.pinkAccent,
                 onTap: () {
-                  // 次の画面へ（例: Navigator.push）
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const TakePhotoScreen(),
+                    ),
+                  );
                 },
               ),
               const SizedBox(height: 16),
