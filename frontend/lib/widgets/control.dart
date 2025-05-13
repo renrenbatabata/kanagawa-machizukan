@@ -32,15 +32,18 @@ class _ControlState extends State<Control> {
   @override
   Widget build(BuildContext context) {
     return BottomNavigationBar(
-      backgroundColor: Colors.green,
+      backgroundColor: const Color.fromARGB(255, 75, 194, 79),
       selectedItemColor: Colors.white,
       unselectedItemColor: Colors.white70,
       currentIndex: _selectedIndex,
       onTap: _onItemTapped,
       items: const <BottomNavigationBarItem>[
-        BottomNavigationBarItem(icon: Icon(Icons.home), label: 'ホーム'),
-        BottomNavigationBarItem(icon: Icon(Icons.camera_alt), label: 'しゃしん'),
-        BottomNavigationBarItem(icon: Icon(Icons.book), label: 'ずかん'),
+        BottomNavigationBarItem(icon: Icon(Icons.home, size: 50), label: 'ホーム'),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.camera_alt, size: 50),
+          label: 'しゃしん',
+        ),
+        BottomNavigationBarItem(icon: Icon(Icons.book, size: 50), label: 'ずかん'),
       ],
     );
   }

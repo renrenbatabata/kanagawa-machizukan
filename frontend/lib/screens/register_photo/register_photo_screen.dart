@@ -19,16 +19,16 @@ class PicturePreviewScreen extends StatelessWidget {
 
           // 再撮影ボタン
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16.0),
+            padding: const EdgeInsets.symmetric(vertical: 20.0),
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16.0),
+                  borderRadius: BorderRadius.circular(50.0),
                 ),
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 12,
+                  horizontal: 55,
+                  vertical: 20,
                 ),
               ),
               onPressed: () {
@@ -38,11 +38,11 @@ class PicturePreviewScreen extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: const [
-                  Icon(Icons.close, color: Colors.white),
+                  Icon(Icons.close, color: Colors.white, size: 30),
                   SizedBox(width: 2),
                   Text(
                     "とりなおす",
-                    style: TextStyle(fontSize: 20, color: Colors.white),
+                    style: TextStyle(fontSize: 30, color: Colors.white),
                   ),
                 ],
               ),
@@ -77,22 +77,23 @@ class PicturePreviewScreen extends StatelessWidget {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.orange,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16.0),
+                      borderRadius: BorderRadius.circular(50.0),
                     ),
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 12,
+                      horizontal: 55,
+                      vertical: 20,
                     ),
                   ),
                   onPressed: () {
                     // 登録ボタン押下時の処理
                   },
-                  icon: const Icon(Icons.edit, color: Colors.white),
+                  icon: const Icon(Icons.edit, color: Colors.white, size: 30),
                   label: const Text(
                     "とうろく",
-                    style: TextStyle(fontSize: 20, color: Colors.white),
+                    style: TextStyle(fontSize: 30, color: Colors.white),
                   ),
                 ),
+                SizedBox(height: 20),
               ],
             ),
           ),
