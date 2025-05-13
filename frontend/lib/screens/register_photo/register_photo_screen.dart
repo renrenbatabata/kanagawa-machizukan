@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:frontend/widgets/header.dart';
 import 'package:frontend/widgets/speech_bubble.dart';
+import 'package:frontend/widgets/control.dart';
 
 class PicturePreviewScreen extends StatelessWidget {
   final String imagePath;
@@ -54,9 +55,9 @@ class PicturePreviewScreen extends StatelessWidget {
               child: ClipOval(
                 child: Image.file(
                   File(imagePath),
-                  width: 350, // 丸の直径
-                  height: 350, // 丸の直径
-                  fit: BoxFit.cover, // 画像を丸くフィット
+                  width: 350,
+                  height: 350,
+                  fit: BoxFit.cover,
                 ),
               ),
             ),
@@ -67,14 +68,11 @@ class PicturePreviewScreen extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 20.0),
             child: Column(
               children: [
-                // 吹き出し部分
                 Bubble(
                   text: 'ずかんにとうろくしてね！',
                   textStyle: const TextStyle(fontSize: 20, color: Colors.black),
                 ),
                 const SizedBox(height: 20),
-
-                // 登録ボタン
                 ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.orange,
@@ -87,7 +85,7 @@ class PicturePreviewScreen extends StatelessWidget {
                     ),
                   ),
                   onPressed: () {
-                    // ボタンが押された時の処理を記載
+                    // 登録ボタン押下時の処理
                   },
                   icon: const Icon(Icons.edit, color: Colors.white),
                   label: const Text(
@@ -100,6 +98,9 @@ class PicturePreviewScreen extends StatelessWidget {
           ),
         ],
       ),
+
+      // Controlウィジェットを下部ナビゲーションに固定
+      bottomNavigationBar: Control(),
     );
   }
 }
