@@ -1,6 +1,6 @@
-import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:frontend/screens/register_photo/register_photo_screen.dart';
 
 class TakePhotoScreen extends StatefulWidget {
   const TakePhotoScreen({super.key});
@@ -191,20 +191,6 @@ class _TakePhotoScreenState extends State<TakePhotoScreen> {
           }
         },
       ),
-    );
-  }
-}
-
-class PicturePreviewScreen extends StatelessWidget {
-  final String imagePath;
-
-  const PicturePreviewScreen({super.key, required this.imagePath});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('プレビュー')),
-      body: Center(child: Image.file(File(imagePath))),
     );
   }
 }
