@@ -10,7 +10,7 @@ class Bubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 100,
+      height: 50,
       padding: const EdgeInsets.only(left: 32, top: 16, right: 32, bottom: 8),
       // ここにconstつけるとhot reloadで変わらない
       decoration: ShapeDecoration(
