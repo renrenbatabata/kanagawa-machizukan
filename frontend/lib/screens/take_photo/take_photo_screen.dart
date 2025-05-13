@@ -1,6 +1,8 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:frontend/screens/register_photo/register_photo_screen.dart';
+import 'package:frontend/widgets/back_button.dart';
+import 'package:frontend/widgets/speech_bubble.dart';
 
 class TakePhotoScreen extends StatefulWidget {
   const TakePhotoScreen({super.key});
@@ -24,7 +26,6 @@ class _TakePhotoScreenState extends State<TakePhotoScreen> {
     final firstCamera = cameras.first;
 
     _controller = CameraController(firstCamera, ResolutionPreset.medium);
-
     _initializeControllerFuture = _controller.initialize();
     setState(() {});
   }
@@ -69,58 +70,23 @@ class _TakePhotoScreenState extends State<TakePhotoScreen> {
 
                 // 上部の吹き出しとテキスト
                 Positioned(
-                  top: 60,
+                  top: 160,
                   left: 20,
                   right: 20,
-                  child: Column(
-                    children: [
-                      Stack(
-                        alignment: Alignment.topRight,
-                        children: [
-                          Center(
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 8,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(
-                                  color: Colors.brown,
-                                  width: 2,
-                                ),
-                              ),
-                              child: const Text(
-                                'とりたいものを ここにいれてね！',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.brown,
-                                  fontSize: 18,
-                                ),
-                              ),
-                            ),
-                          ),
-                          Positioned(
-                            top: -10,
-                            right: -10,
-                            child: IconButton(
-                              icon: const Icon(Icons.close, size: 32),
-                              onPressed: () {
-                                Navigator.pop(context);
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+                  height: 80,
+                  child: Bubble(
+                    text: 'とりたいものを ここにいれてね！',
+                    textStyle: const TextStyle(
+                      fontSize: 20,
+                      color: Color.fromARGB(255, 0, 0, 0),
+                    ),
                   ),
                 ),
 
                 // 撮影エリアの白枠
                 Center(
                   child: Container(
-                    margin: const EdgeInsets.only(top: 120),
+                    margin: const EdgeInsets.only(top: 10),
                     width: MediaQuery.of(context).size.width * 0.85,
                     height: MediaQuery.of(context).size.height * 0.4,
                     decoration: BoxDecoration(
@@ -131,58 +97,34 @@ class _TakePhotoScreenState extends State<TakePhotoScreen> {
 
                 // カメラと画像ボタン
                 Positioned(
-                  bottom: 40,
+                  bottom: 150,
                   left: 0,
                   right: 0,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      // 撮影ボタン
-                      GestureDetector(
-                        onTap: _takePicture,
-                        child: Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: const BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.photo_camera,
-                            size: 48,
-                            color: Colors.green,
-                          ),
-                        ),
+                  child:
+                  // 撮影ボタン
+                  GestureDetector(
+                    onTap: _takePicture,
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
                       ),
-                      const SizedBox(width: 24),
-                      // ギャラリーボタン（今は未実装）
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.green,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Icon(
-                          Icons.image,
-                          size: 40,
-                          color: Colors.white,
-                        ),
+                      child: const Icon(
+                        Icons.photo_camera,
+                        size: 48,
+                        color: Colors.green,
                       ),
-                    ],
+                    ),
                   ),
                 ),
 
-                // 右上の「もどる」テキスト（オプション的）
+                // 戻るボタン
                 Positioned(
                   top: 40,
-                  right: 40,
-                  child: const Text(
-                    'もどる',
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: Colors.white,
-                      shadows: [Shadow(blurRadius: 3, color: Colors.black)],
-                    ),
-                  ),
+                  right: 20,
+
+                  child: CustomBackButton(), // ここで追加
                 ),
               ],
             );
