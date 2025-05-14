@@ -1,5 +1,5 @@
-flask
-pillow
-
+Flask
+requests
+Pillow
 
 # pip install -r requirements.txt

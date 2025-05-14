@@ -11,11 +11,11 @@ Future<void> uploadImageToPythonServer(
   File imageFile,
   String category,
 ) async {
-  final uri = Uri.parse('http://192.168.3.85:5000/analyze'); // ✅ Wi-FiアダプターのIP
+  final uri = Uri.parse('http://192.168.3.85:5000/app'); // ✅ IPアドレス確認
 
   final request = http.MultipartRequest('POST', uri);
   request.files.add(await http.MultipartFile.fromPath('image', imageFile.path));
-  request.fields['category'] = category; // ← フラグ追加
+  request.fields['category'] = category;
 
   try {
     final response = await request.send();
@@ -25,13 +25,16 @@ Future<void> uploadImageToPythonServer(
       final result = jsonDecode(responseBody);
       print('✅ 分析結果: $result');
 
-      // 分析結果を表示 or 次画面へ
       showDialog(
         context: context,
         builder:
             (_) => AlertDialog(
               title: const Text("分析結果"),
-              content: Text(result.toString()),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [Text("分析結果: $result")],
+              ),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(),
