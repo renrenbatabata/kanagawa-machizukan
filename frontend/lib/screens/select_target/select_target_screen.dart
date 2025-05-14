@@ -43,7 +43,9 @@ class SelectTargetScreen extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const TakePhotoScreen(),
+                            builder:
+                                (context) =>
+                                    const TakePhotoScreen(category: "flower"),
                           ),
                         );
                       },
@@ -53,14 +55,32 @@ class SelectTargetScreen extends StatelessWidget {
                       icon: Icons.temple_buddhist,
                       label: 'じんじゃ',
                       color: Colors.redAccent,
-                      onTap: () {},
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder:
+                                (context) =>
+                                    const TakePhotoScreen(category: "shrine"),
+                          ),
+                        );
+                      },
                     ),
                     const SizedBox(height: 35),
                     _TargetButton(
                       icon: CupertinoIcons.tortoise,
                       label: 'かめ太郎',
                       color: Colors.indigoAccent,
-                      onTap: () {},
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder:
+                                (context) =>
+                                    const TakePhotoScreen(category: "turtle"),
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),

@@ -5,7 +5,8 @@ import 'package:frontend/widgets/back_button.dart';
 import 'package:frontend/widgets/speech_bubble.dart';
 
 class TakePhotoScreen extends StatefulWidget {
-  const TakePhotoScreen({super.key});
+  final String category;
+  const TakePhotoScreen({super.key, required this.category});
 
   @override
   State<TakePhotoScreen> createState() => _TakePhotoScreenState();
@@ -47,11 +48,15 @@ class _TakePhotoScreenState extends State<TakePhotoScreen> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => PicturePreviewScreen(imagePath: image.path),
+          builder:
+              (context) => PicturePreviewScreen(
+                imagePath: image.path,
+                category: widget.category,
+              ),
         ),
       );
     } catch (e) {
-      print('Error taking picture: $e');
+      debugPrint('Error taking picture: $e');
     }
   }
 
