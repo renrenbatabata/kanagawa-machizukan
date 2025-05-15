@@ -21,6 +21,9 @@ class MyApp extends StatelessWidget {
         '/select_target': (context) => const SelectTargetScreen(),
         // '/take_photo': (context) => const TakePhotoScreen(),
         // '/preview': (context) => const PreviewScreen(),
+        // '/home': (context) => const HomeScreen(),
+        '/camera': (context) => const SelectTargetScreen(),
+        // '/zukan': (context) => const ZukanScreen(),
       },
     );
   }
