@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
 from PIL import Image
+import json
 
 # 各カテゴリの処理をインポート
 from analyze_flower import analyze_flower
@@ -35,6 +36,7 @@ def analyze():
         return jsonify({'error': '未対応のカテゴリです'}), 400
 
     # 結果を返す
+
     return jsonify(result)
 
 if __name__ == '__main__':

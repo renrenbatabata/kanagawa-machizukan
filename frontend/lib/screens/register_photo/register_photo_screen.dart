@@ -1,17 +1,17 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:frontend/screens/result_page/result_page.dart';
 import 'package:frontend/widgets/header.dart';
 import 'package:frontend/widgets/speech_bubble.dart';
 import 'package:frontend/widgets/control.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-Future<void> uploadImageToPythonServer(
-  BuildContext context,
+Future<Map<String, dynamic>?> uploadImageToPythonServer(
   File imageFile,
   String category,
 ) async {
-  final uri = Uri.parse('http://192.168.3.85:5000/app'); // ✅ IPアドレス確認
+  final uri = Uri.parse('http://10.17.7.85:5000/app');
 
   final request = http.MultipartRequest('POST', uri);
   request.files.add(await http.MultipartFile.fromPath('image', imageFile.path));
@@ -24,31 +24,15 @@ Future<void> uploadImageToPythonServer(
       final responseBody = await response.stream.bytesToString();
       final result = jsonDecode(responseBody);
       print('✅ 分析結果: $result');
-
-      showDialog(
-        context: context,
-        builder:
-            (_) => AlertDialog(
-              title: const Text("分析結果"),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [Text("分析結果: $result")],
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text("OK"),
-                ),
-              ],
-            ),
-      );
+      return result;
     } else {
       print('❌ サーバーエラー: ${response.statusCode}');
     }
   } catch (e) {
     print('❌ 通信エラー: $e');
   }
+
+  return null;
 }
 
 class PicturePreviewScreen extends StatelessWidget {
@@ -136,10 +120,43 @@ class PicturePreviewScreen extends StatelessWidget {
                       vertical: 20,
                     ),
                   ),
-                  onPressed: () {
+                  onPressed: () async {
                     final file = File(imagePath);
-                    uploadImageToPythonServer(context, file, category);
+
+                    final result = await uploadImageToPythonServer(
+                      file,
+                      category,
+                    );
+
+                    if (result != null) {
+                      final name = result['name'] ?? 'Unknown';
+                      final commonNames = List<String>.from(
+                        result['common_names'] ?? [],
+                      );
+
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder:
+                              (context) => ResultPage(
+                                imagePath: imagePath,
+                                name: name,
+                                commonNames: commonNames,
+                              ),
+                        ),
+                      );
+                    } else {
+                      showDialog(
+                        context: context,
+                        builder:
+                            (_) => const AlertDialog(
+                              title: Text("エラー"),
+                              content: Text("お花の特定に失敗しました。もう一度お試しください。"),
+                            ),
+                      );
+                    }
                   },
+
                   icon: const Icon(Icons.edit, color: Colors.white, size: 30),
                   label: const Text(
                     "とうろく",
