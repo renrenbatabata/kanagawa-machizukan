@@ -130,9 +130,9 @@ class PicturePreviewScreen extends StatelessWidget {
 
                     if (result != null) {
                       final name = result['name'] ?? 'Unknown';
-                      final commonNames = List<String>.from(
-                        result['common_names'] ?? [],
-                      );
+                      final commonName = result['common_names'] ?? 'Unknown';
+                      final taxonomy = result['taxonomy'];
+                      final description = result['description'];
 
                       Navigator.push(
                         context,
@@ -141,7 +141,9 @@ class PicturePreviewScreen extends StatelessWidget {
                               (context) => ResultPage(
                                 imagePath: imagePath,
                                 name: name,
-                                commonNames: commonNames,
+                                commonName: commonName,
+                                description: description,
+                                taxonomy: taxonomy,
                               ),
                         ),
                       );
