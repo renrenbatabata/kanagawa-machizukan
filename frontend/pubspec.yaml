@@ -29,3 +29,5 @@ flutter:
   uses-material-design: true
   assets:
     - images/header.png
+    - images/start.png
+    - images/logo.png
