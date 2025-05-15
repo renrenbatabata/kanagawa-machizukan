@@ -2,11 +2,12 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:frontend/widgets/header.dart';
+import 'package:frontend/widgets/control.dart';
 
 class ResultPage extends StatelessWidget {
   final String imagePath;
-  final String name; // 例: 笠稲荷神社
-  final String commonName; // 例: かさのぎいなりじんじゃ
+  final String name;
+  final String commonName;
   final Map<String, dynamic> taxonomy;
   final Map<String, dynamic> description;
 
@@ -32,28 +33,50 @@ class ResultPage extends StatelessWidget {
             child: SingleChildScrollView(
               child: Column(
                 children: [
+                  const SizedBox(height: 16),
                   // タイトルエリア
-                  Padding(
-                    padding: const EdgeInsets.only(
-                      top: 40,
-                      left: 16,
-                      right: 16,
-                    ),
+                  Container(
+                    width: double.infinity,
+                    margin: const EdgeInsets.symmetric(horizontal: 16),
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(color: const Color(0xFFFFF6E5)),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+
+                      // 名前
+                      children: [
+                        Text(
+                          commonName,
+                          style: const TextStyle(
+                            fontSize: 30,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(name, style: const TextStyle(fontSize: 18)),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 12),
                   // 写真
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: Image.file(File(imagePath)),
+                  Center(
+                    child: Container(
+                      width: 350,
+                      height: 350,
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.orange, width: 3),
+                      ),
+                      clipBehavior: Clip.hardEdge,
+                      child: Image.file(
+                        File(imagePath),
+                        width: 350,
+                        height: 350,
+                        fit: BoxFit.cover,
+                      ),
                     ),
                   ),
+
                   const SizedBox(height: 8),
-                  Text(today),
+                  Text(today, style: const TextStyle(fontSize: 16)),
                   const SizedBox(height: 16),
                   // しゃしんをほぞんするボタン
                   ElevatedButton.icon(
@@ -61,7 +84,7 @@ class ResultPage extends StatelessWidget {
                       backgroundColor: Colors.red,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
+                        horizontal: 30,
                         vertical: 12,
                       ),
                       shape: RoundedRectangleBorder(
@@ -72,50 +95,73 @@ class ResultPage extends StatelessWidget {
                       // 保存処理を書く
                     },
                     icon: const Icon(Icons.download),
-                    label: const Text("しゃしんをほぞんする"),
+                    label: const Text(
+                      "しゃしんをほぞんする",
+                      style: TextStyle(fontSize: 20),
+                    ),
                   ),
                   const SizedBox(height: 24),
+
                   // きほんデータ
                   Container(
                     width: double.infinity,
                     margin: const EdgeInsets.symmetric(horizontal: 16),
                     padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFFF6E5),
-                      border: Border.all(color: Colors.orange),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.orange,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: const Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Icons.search, color: Colors.white),
-                              SizedBox(width: 4),
-                              Text(
-                                "きほんデータ",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
+                        Center(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 25,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.orange,
+                              borderRadius: BorderRadius.vertical(
+                                top: Radius.circular(12),
+                                bottom: Radius.circular(0),
+                              ),
+                            ),
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.search, color: Colors.white),
+                                SizedBox(width: 4),
+                                Text(
+                                  "きほんデータ",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 20,
+                                  ),
                                 ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            color: const Color.fromARGB(161, 251, 215, 148),
+                            border: Border.all(color: Colors.orange, width: 2),
+                          ),
+                          child: Column(
+                            // ← ここが抜けてた！
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "分類: kingdom = Plantae, phylum = Tracheophyta, class = Magnoliopsida, order = Asterales, family = Asteraceae, genus = Helianthus",
+                                style: TextStyle(fontSize: 16),
+                              ),
+                              Text(
+                                description['value'] ?? "説明がありません",
+                                style: const TextStyle(fontSize: 16),
                               ),
                             ],
                           ),
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          description['value'] ?? "説明がありません",
-                          style: const TextStyle(fontSize: 16),
                         ),
                       ],
                     ),
@@ -126,36 +172,7 @@ class ResultPage extends StatelessWidget {
             ),
           ),
           // フッター
-          Container(
-            height: 70,
-            color: const Color(0xFFE4F8E8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    Icon(Icons.home, color: Colors.green),
-                    Text("ホーム", style: TextStyle(color: Colors.green)),
-                  ],
-                ),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    Icon(Icons.camera_alt, color: Colors.green),
-                    Text("しゃしん", style: TextStyle(color: Colors.green)),
-                  ],
-                ),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    Icon(Icons.menu_book, color: Colors.green),
-                    Text("ずかん", style: TextStyle(color: Colors.green)),
-                  ],
-                ),
-              ],
-            ),
-          ),
+          Control(),
         ],
       ),
     );
