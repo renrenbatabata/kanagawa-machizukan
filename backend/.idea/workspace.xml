@@ -76,7 +76,7 @@
     "RequestMappingsPanelWidth1": "75",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
-    "Spring Boot.BackendApplication.executor": "Debug",
+    "Spring Boot.BackendApplication.executor": "Run",
     "git-widget-placeholder": "camera__backend",
     "last_opened_file_path": "C:/Users/n1230012.STCN2/Documents/Projects/kanagawa-machizukan/backend/build.gradle",
     "node.js.detected.package.eslint": "true",
@@ -121,7 +121,7 @@
       <updated>1747118164325</updated>
       <workItem from="1747118165523" duration="60000" />
       <workItem from="1747118408776" duration="2028000" />
-      <workItem from="1747270547845" duration="16284000" />
+      <workItem from="1747270547845" duration="24747000" />
     </task>
     <servers />
   </component>
