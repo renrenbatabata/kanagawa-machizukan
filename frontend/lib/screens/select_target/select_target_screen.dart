@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+
 import 'package:frontend/screens/take_photo/take_photo_screen.dart';
 import 'package:frontend/widgets/header.dart';
 import 'package:frontend/widgets/back_button.dart';
+
 
 class SelectTargetScreen extends StatelessWidget {
   const SelectTargetScreen({super.key});
@@ -11,6 +13,7 @@ class SelectTargetScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFFAF4EF),
+
       body: Column(
         children: [
           const ImageHeader(), // ヘッダー画像
@@ -88,6 +91,7 @@ class SelectTargetScreen extends StatelessWidget {
             ),
           ),
         ],
+
       ),
     );
   }
@@ -124,6 +128,7 @@ class _TargetButton extends StatelessWidget {
         label: Text(
           label,
           style: const TextStyle(fontSize: 30, color: Colors.white),
+
         ),
       ),
     );
