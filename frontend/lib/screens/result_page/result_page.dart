@@ -9,7 +9,7 @@ class ResultPage extends StatelessWidget {
   final String name;
   final String commonName;
   final Map<String, dynamic> taxonomy;
-  final Map<String, dynamic> description;
+  final String description;
 
   const ResultPage({
     super.key,
@@ -153,11 +153,12 @@ class ResultPage extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                "分類: kingdom = Plantae, phylum = Tracheophyta, class = Magnoliopsida, order = Asterales, family = Asteraceae, genus = Helianthus",
-                                style: TextStyle(fontSize: 16),
+                                "分類 : ${taxonomy['family']}",
+                                style: const TextStyle(fontSize: 16),
                               ),
+                              const SizedBox(height: 8),
                               Text(
-                                description['value'] ?? "説明がありません",
+                                description,
                                 style: const TextStyle(fontSize: 16),
                               ),
                             ],

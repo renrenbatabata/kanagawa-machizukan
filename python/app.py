@@ -36,6 +36,7 @@ def analyze():
         return jsonify({'error': '未対応のカテゴリです'}), 400
 
     # 結果を返す
+    print(result)
 
     return jsonify(result)
 
