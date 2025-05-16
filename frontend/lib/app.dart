@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'screens/select_target/select_target_screen.dart';
 import 'screens/start_page/start_page.dart';
+import 'screens/home_page/home_page.dart';
 
 // import 'screens/take_photo/take_photo_screen.dart';
 // import 'screens/preview/preview_screen.dart';
@@ -22,13 +23,9 @@ class MyApp extends StatelessWidget {
       initialRoute: '/start_page', // 最初の画面
       routes: {
         '/start_page': (context) => const StartPage(),
+        '/home_page': (context) => const HomePage(),
         '/select_target': (context) => const SelectTargetScreen(),
         '/camera': (context) => const SelectTargetScreen(),
-
-        // '/take_photo': (context) => const TakePhotoScreen(),
-        // '/preview': (context) => const PreviewScreen(),
-        // '/home': (context) => const HomeScreen(),
-        // '/zukan': (context) => const ZukanScreen(),
       },
     );
   }

@@ -18,7 +18,7 @@ class _ControlState extends State<Control> {
     // 画面遷移などの処理をここに追加
     switch (index) {
       case 0:
-        Navigator.pushNamed(context, '/home');
+        Navigator.pushNamed(context, '/home_page');
         break;
       case 1:
         Navigator.pushNamed(context, '/camera');
