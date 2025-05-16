@@ -11,7 +11,7 @@ class FlowerResultPage extends StatelessWidget {
   final String name;
   final String family;
   final String genius;
-  final String meaning;
+  final String? meaning;
   final String description;
 
   const FlowerResultPage({
@@ -153,8 +153,14 @@ class FlowerResultPage extends StatelessWidget {
                                       style: const TextStyle(fontSize: 16),
                                     ),
                                     const SizedBox(height: 8),
+                                    // meaningがnullでなければ表示
+                                    if (meaning != null && meaning!.isNotEmpty)
+                                      Text(
+                                        meaning!,
+                                        style: const TextStyle(fontSize: 16),
+                                      ),
                                     Text(
-                                      meaning,
+                                      description,
                                       style: const TextStyle(fontSize: 16),
                                     ),
                                     Text(
