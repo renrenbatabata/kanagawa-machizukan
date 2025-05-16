@@ -1,6 +1,6 @@
 // lib/widgets/header.dart
 import 'package:flutter/material.dart';
-import 'package:frontend/screens/select_target/select_target_screen.dart';
+import 'package:frontend/screens/home_page/home_page.dart';
 
 class StartPage extends StatelessWidget {
   const StartPage({super.key});
@@ -45,14 +45,12 @@ class StartPage extends StatelessWidget {
                       62,
                       34,
                       0,
-                    ).withOpacity(0.5),
+                    ).withAlpha((0.1 * 255).toInt()),
                   ),
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (context) => const SelectTargetScreen(),
-                      ),
+                      MaterialPageRoute(builder: (context) => const HomePage()),
                     );
                   },
                   child: const Text(
