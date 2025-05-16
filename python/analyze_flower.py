@@ -86,7 +86,6 @@ def analyze_flower(image):
         flower_order = taxonomy.get('order')
         flower_kingdom = taxonomy.get('kingdom')
         flower_phylum = taxonomy.get('phylum')
-        flower_common_name = taxonomy.get('common_name')
 
         # taxonomyの情報を日本語に翻訳
         flower_class = deepl_client.translate_text(flower_class, target_lang='JA').text

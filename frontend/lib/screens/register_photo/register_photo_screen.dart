@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:frontend/screens/result_page/flower_result_page.dart';
 import 'package:frontend/screens/result_page/result_page.dart';
 import 'package:frontend/widgets/header.dart';
 import 'package:frontend/widgets/speech_bubble.dart';
@@ -11,7 +12,7 @@ Future<Map<String, dynamic>?> uploadImageToPythonServer(
   File imageFile,
   String category,
 ) async {
-  final uri = Uri.parse('http://10.17.7.85:5000/app');
+  final uri = Uri.parse('http://10.17.8.152:5000/app');
 
   final request = http.MultipartRequest('POST', uri);
   request.files.add(await http.MultipartFile.fromPath('image', imageFile.path));
@@ -129,31 +130,66 @@ class PicturePreviewScreen extends StatelessWidget {
                     );
 
                     if (result != null) {
-                      final name = result['name'] ?? 'Unknown';
-                      final commonName = result['common_names'] ?? 'Unknown';
-                      final taxonomy = result['taxonomy'];
-                      final description = result['description'];
+                      if (category == 'flower') {
+                        // 花向けのデータを受け取る処理
+                        final name = result['name_jp'] ?? 'Unknown'; //名前
+                        final family = result['family'] ?? 'Unknown'; //科
+                        final genius = result['genius'] ?? "Unlnown"; //〇目
+                        final meaning = result['meaning'] ?? "Unlnown"; //花言葉
+                        final description = result['description'];
 
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder:
+                                (context) => FlowerResultPage(
+                                  imagePath: imagePath,
+                                  name: name,
+                                  family: family,
+                                  genius: genius,
+                                  meaning: meaning,
+                                  description: description,
+                                ),
+                          ),
+                        );
+                      } else if (category == 'shrine' || category == 'turtle') {
+                        // 神社やかめ向けの処理（仮にこういう構造だとする）
+                        final spotName = result['spot_name'] ?? 'Unknown';
+                        final spotType = result['spot_type'] ?? category;
+                        final message =
+                            result['message'] ?? 'くわしい情報は見つかりませんでした';
+
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder:
+                                (context) => ResultPage(
+                                  imagePath: imagePath,
+                                  name: spotName,
+                                  commonName: spotType,
+                                  description: message,
+                                  taxonomy: const {}, // 花ではないので空のマップを渡す
+                                ),
+                          ),
+                        );
+                      } else {
+                        // 未対応カテゴリ（念のため）
+                        showDialog(
+                          context: context,
                           builder:
-                              (context) => ResultPage(
-                                imagePath: imagePath,
-                                name: name,
-                                commonName: commonName,
-                                description: description,
-                                taxonomy: taxonomy,
+                              (_) => const AlertDialog(
+                                title: Text("エラー"),
+                                content: Text("このカテゴリには対応していません。"),
                               ),
-                        ),
-                      );
+                        );
+                      }
                     } else {
                       showDialog(
                         context: context,
                         builder:
                             (_) => const AlertDialog(
                               title: Text("エラー"),
-                              content: Text("お花の特定に失敗しました。もう一度お試しください。"),
+                              content: Text("特定に失敗しました。もう一度お試しください。"),
                             ),
                       );
                     }
