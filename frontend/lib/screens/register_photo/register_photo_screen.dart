@@ -154,10 +154,11 @@ class PicturePreviewScreen extends StatelessWidget {
                         );
                       } else if (category == 'shrine' || category == 'turtle') {
                         // 神社やかめ向けの処理（仮にこういう構造だとする）
-                        final spotName = result['spot_name'] ?? 'Unknown';
-                        final spotType = result['spot_type'] ?? category;
-                        final message =
-                            result['message'] ?? 'くわしい情報は見つかりませんでした';
+                        final name = result['name'] ?? 'Unknown';
+                        final hiraganaName =
+                            result['hiraganaName'] ?? "Unkonown";
+                        final description =
+                            result['description'] ?? 'くわしい情報は見つかりませんでした';
 
                         Navigator.push(
                           context,
@@ -165,10 +166,9 @@ class PicturePreviewScreen extends StatelessWidget {
                             builder:
                                 (context) => ResultPage(
                                   imagePath: imagePath,
-                                  name: spotName,
-                                  commonName: spotType,
-                                  description: message,
-                                  taxonomy: const {}, // 花ではないので空のマップを渡す
+                                  name: name,
+                                  hiraganaName: hiraganaName,
+                                  description: description,
                                 ),
                           ),
                         );

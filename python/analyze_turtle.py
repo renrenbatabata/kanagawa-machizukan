@@ -3,6 +3,8 @@ def analyze_turtle(image):
     return {
         'category': 'turtle',
         'message': '亀の処理をしました',
-        'image_width': width,
-        'image_height': height
+        'name':"亀名前",
+        'hiraganaName':'かめなまえ',
+        'description':'かめ説明'
     }
+

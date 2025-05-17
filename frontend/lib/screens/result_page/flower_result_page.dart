@@ -44,7 +44,7 @@ class FlowerResultPage extends StatelessWidget {
                   } else {
                     return Column(
                       children: [
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 30),
                         // タイトル
                         Container(
                           width: double.infinity,

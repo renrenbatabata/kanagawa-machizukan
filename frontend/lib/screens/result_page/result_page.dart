@@ -7,16 +7,14 @@ import 'package:frontend/widgets/control.dart';
 class ResultPage extends StatelessWidget {
   final String imagePath;
   final String name;
-  final String commonName;
-  final Map<String, dynamic> taxonomy;
+  final String hiraganaName;
   final String description;
 
   const ResultPage({
     super.key,
     required this.imagePath,
     required this.name,
-    required this.commonName,
-    required this.taxonomy,
+    required this.hiraganaName,
     required this.description,
   });
 
@@ -33,7 +31,7 @@ class ResultPage extends StatelessWidget {
             child: SingleChildScrollView(
               child: Column(
                 children: [
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 30),
                   // タイトルエリア
                   Container(
                     width: double.infinity,
@@ -46,14 +44,17 @@ class ResultPage extends StatelessWidget {
                       // 名前
                       children: [
                         Text(
-                          commonName,
+                          name,
                           style: const TextStyle(
                             fontSize: 30,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         const SizedBox(height: 8),
-                        Text(name, style: const TextStyle(fontSize: 18)),
+                        Text(
+                          hiraganaName,
+                          style: const TextStyle(fontSize: 18),
+                        ),
                       ],
                     ),
                   ),
@@ -148,20 +149,16 @@ class ResultPage extends StatelessWidget {
                             color: const Color.fromARGB(161, 251, 215, 148),
                             border: Border.all(color: Colors.orange, width: 2),
                           ),
-                          child: Column(
-                            // ← ここが抜けてた！
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                "分類 : ${taxonomy['family']}",
-                                style: const TextStyle(fontSize: 16),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                description,
-                                style: const TextStyle(fontSize: 16),
-                              ),
-                            ],
+                          child: Center(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  description,
+                                  style: const TextStyle(fontSize: 16),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ],

@@ -3,6 +3,8 @@ def analyze_shrine(image):
     return {
         'category': 'shrine',
         'message': '神社の処理をしました',
-        'image_width': width,
-        'image_height': height
+        'name':"神社名前",
+        'hiraganaName':'じんじゃなまえ',
+        'description':'神社説明'
     }
+
