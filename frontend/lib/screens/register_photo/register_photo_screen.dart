@@ -12,7 +12,7 @@ Future<Map<String, dynamic>?> uploadImageToPythonServer(
   File imageFile,
   String category,
 ) async {
-  final uri = Uri.parse('http://10.17.8.152:5000/app');
+  final uri = Uri.parse('http://192.168.3.85:5000/app');
 
   final request = http.MultipartRequest('POST', uri);
   request.files.add(await http.MultipartFile.fromPath('image', imageFile.path));
@@ -132,7 +132,7 @@ class PicturePreviewScreen extends StatelessWidget {
                     if (result != null) {
                       if (category == 'flower') {
                         // 花向けのデータを受け取る処理
-                        final name = result['name_jp'] ?? 'Unknown'; //名前
+                        final name = result['name'] ?? 'Unknown'; //名前
                         final family = result['family'] ?? 'Unknown'; //科
                         final genius = result['genius'] ?? "Unlnown"; //〇目
                         final meaning = result['meaning'] ?? "Unlnown"; //花言葉

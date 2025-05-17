@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:frontend/widgets/header.dart';
 import 'package:frontend/widgets/control.dart';
-import 'package:frontend/widgets/save_image_to_gallery.dart';
 
 class FlowerResultPage extends StatelessWidget {
   final String imagePath;
@@ -43,7 +42,6 @@ class FlowerResultPage extends StatelessWidget {
                   } else if (snapshot.hasError) {
                     return const Center(child: Text("画像の読み込みに失敗しました"));
                   } else {
-                    final imageBytes = snapshot.data!;
                     return Column(
                       children: [
                         const SizedBox(height: 16),
@@ -89,8 +87,28 @@ class FlowerResultPage extends StatelessWidget {
                         Text(today, style: const TextStyle(fontSize: 16)),
                         const SizedBox(height: 16),
 
-                        // 写真を保存するボタン
-                        SaveImageButton(capturedImageBytes: imageBytes),
+                        // しゃしんをほぞんするボタン
+                        ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 30,
+                              vertical: 12,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          onPressed: () {
+                            // 保存処理を書く
+                          },
+                          icon: const Icon(Icons.download),
+                          label: const Text(
+                            "しゃしんをほぞんする",
+                            style: TextStyle(fontSize: 20),
+                          ),
+                        ),
                         const SizedBox(height: 24),
 
                         // きほんデータ
@@ -154,7 +172,7 @@ class FlowerResultPage extends StatelessWidget {
                                     ),
                                     const SizedBox(height: 8),
                                     // meaningがnullでなければ表示
-                                    if (meaning != null && meaning!.isNotEmpty)
+                                    if (meaning != null)
                                       Text(
                                         meaning!,
                                         style: const TextStyle(fontSize: 16),
