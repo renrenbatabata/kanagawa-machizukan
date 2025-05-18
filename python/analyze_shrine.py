@@ -1,4 +1,4 @@
-def analyze_shrine(image ,latitude, longitude):
+def analyze_shrine(image,latitude,longitude):
     width, height = image.size
     return {
         'category': 'shrine',
@@ -6,7 +6,7 @@ def analyze_shrine(image ,latitude, longitude):
         'name':"神社名前",
         'hiraganaName':'じんじゃなまえ',
         'description':'神社説明',
-         latitude :latitude ,
-         longitude :longitude
+        'latitude': latitude,
+        'longitude': longitude
     }
 

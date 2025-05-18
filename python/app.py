@@ -43,7 +43,7 @@ def analyze():
         except ValueError:
             return jsonify({'error': '位置情報が無効です'}), 400
 
-        result = analyze_shrine(image, latitude, longitude)
+        result = analyze_shrine(image,latitude,longitude)
     elif category == 'turtle':
         # かめの分析（位置情報を利用）
         if not latitude or not longitude:
@@ -55,7 +55,7 @@ def analyze():
         except ValueError:
             return jsonify({'error': '位置情報が無効です'}), 400
 
-        result = analyze_turtle(image, latitude, longitude)
+        result = analyze_turtle(image,latitude,longitude)
     else:
         return jsonify({'error': '未対応のカテゴリです'}), 400
 
