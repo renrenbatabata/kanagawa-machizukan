@@ -4,7 +4,7 @@ import requests
 from io import BytesIO
 import deepl
 
-PLANT_ID_API_KEY = 'ecJO6G6Ca0hYv1TaNYuXaYfZFOfTdwlfRzFYUmEOu0PaXkX3JZ'
+PLANT_ID_API_KEY = 'SVC2GepJUfDIuMTYW8u8nZvccMpCUEZ3xPZPLjWcpLFZ5KfLTS'
 DEEPL_API_KEY= '222ede1e-56bc-4131-a900-4dc437e2efdb:fx'  # DeepL APIキーを指定してください
 
 
@@ -40,7 +40,7 @@ def analyze_flower(image):
             return {'error': 'お花を特定できませんでした'}
 
         best = suggestions[0]
-        name = best.get('name')
+        name_en = best.get('name')
 
 
         info_response = requests.get(
@@ -56,7 +56,7 @@ def analyze_flower(image):
         if info_response.status_code == 200:
             info_data = info_response.json()
 
-            common_names = info_data.get('result').get('classification').get('suggestions')[0].get('details').get('common_names')[0]
+            # common_names = info_data.get('result').get('classification').get('suggestions')[0].get('details').get('common_names')[0]
 
             taxonomy = info_data.get('result').get('classification').get('suggestions')[0].get('details').get('taxonomy')
 
@@ -75,42 +75,53 @@ def analyze_flower(image):
             }
 
         deepl_client = deepl.DeepLClient(DEEPL_API_KEY)
-        name = deepl_client.translate_text(name, target_lang='JA').text
-        common_names = deepl_client.translate_text(common_names, target_lang='JA').text
+
+        name = deepl_client.translate_text(name_en, target_lang='JA').text
+
+        # common_names = deepl_client.translate_text(common_names, target_lang='JA').text
         description = deepl_client.translate_text(description, target_lang='JA').text
 
         # taxonomyの情報を取得
-        flower_class = taxonomy.get('class')
-        flower_genus = taxonomy.get('genus')
-        flower_family = taxonomy.get('family')
-        flower_order = taxonomy.get('order')
-        flower_kingdom = taxonomy.get('kingdom')
-        flower_phylum = taxonomy.get('phylum')
-        flower_common_name = taxonomy.get('common_name')
+        # flower_class = taxonomy.get('class')
+        genius = taxonomy.get('genus')
+        family = taxonomy.get('family')
+        # flower_order = taxonomy.get('order')
+        # flower_kingdom = taxonomy.get('kingdom')
+        # flower_phylum = taxonomy.get('phylum')
+        # flower_common_name = taxonomy.get('common_name')
 
         # taxonomyの情報を日本語に翻訳
-        flower_class = deepl_client.translate_text(flower_class, target_lang='JA').text
-        flower_genus = deepl_client.translate_text(flower_genus, target_lang='JA').text
-        flower_family = deepl_client.translate_text(flower_family, target_lang='JA').text
-        flower_order = deepl_client.translate_text(flower_order, target_lang='JA').text
-        flower_kingdom = deepl_client.translate_text(flower_kingdom, target_lang='JA').text
-        flower_phylum = deepl_client.translate_text(flower_phylum, target_lang='JA').text
+        # flower_class = deepl_client.translate_text(flower_class, target_lang='JA').text
+        genius = deepl_client.translate_text(genius, target_lang='JA').text
+        family = deepl_client.translate_text(family, target_lang='JA').text
+
+        # flower_order = deepl_client.translate_text(flower_order, target_lang='JA').text
+        # flower_kingdom = deepl_client.translate_text(flower_kingdom, target_lang='JA').text
+        # flower_phylum = deepl_client.translate_text(flower_phylum, target_lang='JA').text
 
 
         # taxonomyの情報を辞書にまとめる
-        taxonomy = {
-            'class': flower_class,
-            'genus': flower_genus,
-            'family': flower_family,
-            'order': flower_order,
-            'kingdom': flower_kingdom,
-            'phylum': flower_phylum,
-        }
+        # taxonomy = {
+        #     'class': flower_class,
+        #     'genus': flower_genus,
+        #     'family': flower_family,
+        #     'order': flower_order,
+        #     'kingdom': flower_kingdom,
+        #     'phylum': flower_phylum,
+        # }
 
+
+#   final String imagePath;
+#   final String name;
+#   final String family;
+#   final String genius;
+#   final String meaning;
+#   final String description;
         return {
+            'name_en':name_en,
             'name': name,
-            'common_names': common_names,
-            'taxonomy': taxonomy,
+            'family': family,
+            'genius': genius,
             'description': description,
         }
 

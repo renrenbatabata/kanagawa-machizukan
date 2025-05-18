@@ -1,6 +1,5 @@
 from flask import Flask, request, jsonify
 from PIL import Image
-import json
 
 # 各カテゴリの処理をインポート
 from analyze_flower import analyze_flower
@@ -25,19 +24,43 @@ def analyze():
     if not category:
         return jsonify({'error': 'カテゴリが指定されていません'}), 400
 
+    # 位置情報の取得
+    latitude = request.form.get('latitude')
+    longitude = request.form.get('longitude')
+
     # カテゴリに基づいて処理
     if category == 'flower':
+        # 花の分析（位置情報は不要）
         result = analyze_flower(image)
     elif category == 'shrine':
-        result = analyze_shrine(image)
+        # 神社の分析（位置情報を利用）
+        if not latitude or not longitude:
+            return jsonify({'error': '位置情報が必要です'}), 400
+
+        try:
+            latitude = float(latitude)
+            longitude = float(longitude)
+        except ValueError:
+            return jsonify({'error': '位置情報が無効です'}), 400
+
+        result = analyze_shrine(image,latitude,longitude)
     elif category == 'turtle':
-        result = analyze_turtle(image)
+        # かめの分析（位置情報を利用）
+        if not latitude or not longitude:
+            return jsonify({'error': '位置情報が必要です'}), 400
+
+        try:
+            latitude = float(latitude)
+            longitude = float(longitude)
+        except ValueError:
+            return jsonify({'error': '位置情報が無効です'}), 400
+
+        result = analyze_turtle(image,latitude,longitude)
     else:
         return jsonify({'error': '未対応のカテゴリです'}), 400
 
     # 結果を返す
     print(result)
-
     return jsonify(result)
 
 if __name__ == '__main__':

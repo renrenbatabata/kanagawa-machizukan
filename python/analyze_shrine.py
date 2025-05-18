@@ -1,8 +1,12 @@
-def analyze_shrine(image):
+def analyze_shrine(image,latitude,longitude):
     width, height = image.size
     return {
         'category': 'shrine',
         'message': '神社の処理をしました',
-        'image_width': width,
-        'image_height': height
+        'name':"神社名前",
+        'hiraganaName':'じんじゃなまえ',
+        'description':'神社説明',
+        'latitude': latitude,
+        'longitude': longitude
     }
+
