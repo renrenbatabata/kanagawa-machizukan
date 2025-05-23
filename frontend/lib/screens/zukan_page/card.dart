@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/widgets/colors.dart';
 
-class IllustratedCard extends StatefulWidget {
-  const IllustratedCard({super.key});
+class ZukanCard extends StatefulWidget {
+  const ZukanCard({super.key});
 
   @override
-  State<IllustratedCard> createState() => _IllustratedCardState();
+  State<ZukanCard> createState() => _ZukanCardState();
 }
 
-class _IllustratedCardState extends State<IllustratedCard> {
+class _ZukanCardState extends State<ZukanCard> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        color: AppColors.redSub,
+        color: AppColors.orangeSub,
         child: Center(
           child: Row(
             children: [
