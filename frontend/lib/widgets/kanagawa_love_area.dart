@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:frontend/widgets/colors.dart';
 
 class KanagawaLoveArea extends StatelessWidget {
   const KanagawaLoveArea({super.key});
@@ -16,32 +17,32 @@ class KanagawaLoveArea extends StatelessWidget {
       children: [
         _buildLoveTile(
           context,
-          color: Colors.orange,
-          subcolor: const Color(0xFFFFE4C7),
+          color: AppColors.orange,
+          subcolor: AppColors.orangeSub,
           icon: Icons.search,
           label: 'すべて',
           points: '300',
         ),
         _buildLoveTile(
           context,
-          color: Colors.pink,
-          subcolor: const Color(0xFFFFD6E0),
+          color: AppColors.pink,
+          subcolor: AppColors.pinkSub,
           icon: Icons.local_florist,
           label: 'おはな',
           points: '100',
         ),
         _buildLoveTile(
           context,
-          color: Colors.blue,
-          subcolor: const Color(0xFFDCEFFF),
+          color: AppColors.blue,
+          subcolor: AppColors.blueSub,
           icon: CupertinoIcons.tortoise,
           label: 'かめ太郎',
           points: '100',
         ),
         _buildLoveTile(
           context,
-          color: Colors.red,
-          subcolor: const Color(0xFFFFDAD6),
+          color: AppColors.red,
+          subcolor: AppColors.redSub,
           icon: Icons.temple_hindu,
           label: 'じんじゃ',
           points: '100',
