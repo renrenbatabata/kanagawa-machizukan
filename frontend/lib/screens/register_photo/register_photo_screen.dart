@@ -14,14 +14,16 @@ Future<Map<String, dynamic>?> uploadImageToPythonServer(
   String category,
   Position position,
 ) async {
-  final uri = Uri.parse('http://192.168.3.85:5000/app');
+  final uri = Uri.parse('http://10.17.8.110:5000/app');
 
   final request = http.MultipartRequest('POST', uri);
   request.files.add(await http.MultipartFile.fromPath('image', imageFile.path));
   request.fields['category'] = category;
-  // 位置情報を送信フィールドに追加
-  request.fields['latitude'] = position.latitude.toString();
-  request.fields['longitude'] = position.longitude.toString();
+  request.fields['userId'] = "215";
+
+  // // 位置情報を送信フィールドに追加
+  request.fields['latitude'] = position.latitude.toString(); //緯度
+  request.fields['longitude'] = position.longitude.toString(); //経度
 
   try {
     final response = await request.send();
@@ -139,7 +141,7 @@ class PicturePreviewScreen extends StatelessWidget {
                     if (result != null) {
                       if (category == 'flower') {
                         // 花向けのデータを受け取る処理
-                        final name = result['name'] ?? 'Unknown'; //名前
+                        final name = result['name_jp'] ?? 'Unknown'; //名前
                         final family = result['family'] ?? 'Unknown'; //科
                         final genius = result['genius'] ?? "Unlnown"; //〇目
                         final meaning = result['meaning'] ?? "Unlnown"; //花言葉
