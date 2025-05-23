@@ -2,7 +2,11 @@ package com.example.backend.service;
 
 import com.example.backend.dto.AnalyzeResponseDto;
 import com.example.backend.dto.FlowersInfoDto;
+import com.example.backend.dto.ImageDetailDto;
 import org.springframework.stereotype.Service;
+
+import java.util.Arrays;
+import java.util.List;
 
 @Service
 public class LogService {
@@ -20,5 +24,15 @@ public class LogService {
         System.out.println("属:" + info.getGenius());
         System.out.println("科:" + info.getFamily());
         System.out.println("解説:" + info.getDescription());
+    }
+    public void imageDetailListLog(List<ImageDetailDto> dto){
+        for (ImageDetailDto imageDetailDto : dto) {
+            System.out.println("=============================================");
+            System.out.println("Name:" + imageDetailDto.getName());
+            System.out.println("Category:" + imageDetailDto.getCategory());
+            System.out.println("ShootingDate:" + imageDetailDto.getShootingDate());
+            System.out.println("ShootingLocation:" + imageDetailDto.getShootingLocation());
+           // System.out.println("ImageData:" + Arrays.toString(imageDetailDto.getImageData()));
+        }
     }
 }

@@ -78,7 +78,7 @@
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
     &quot;Spring Boot.BackendApplication.executor&quot;: &quot;Run&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;camera__backend&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;feature__album&quot;,
     &quot;last_opened_file_path&quot;: &quot;C:/Users/n1230012.STCN2/Documents/Projects/kanagawa-machizukan/backend/build.gradle&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
@@ -124,7 +124,10 @@
       <workItem from="1747118408776" duration="2028000" />
       <workItem from="1747270547845" duration="41942000" />
       <workItem from="1747613180436" duration="2966000" />
-      <workItem from="1747616182712" duration="1762000" />
+      <workItem from="1747616182712" duration="4674000" />
+      <workItem from="1747621365748" duration="4336000" />
+      <workItem from="1747959374168" duration="1336000" />
+      <workItem from="1747960973186" duration="5574000" />
     </task>
     <servers />
   </component>

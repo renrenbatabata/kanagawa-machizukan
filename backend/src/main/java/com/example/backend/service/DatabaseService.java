@@ -1,6 +1,7 @@
 package com.example.backend.service;
 
 import com.example.backend.dto.FlowersInfoDto;
+import com.example.backend.dto.ImageDetailDto;
 import com.example.backend.dto.SaveRequestDto;
 import com.example.backend.entity.FlowersInfoEntity;
 import com.example.backend.entity.ImageDetailEntity;
@@ -63,13 +64,10 @@ public class DatabaseService {
                 flowerInfo.setDescription("no data.");
             }
         }
-
         imageDetailEntity.setImageData(saveRequestDto.getFile().getBytes());
         imageDetailEntity.setShootingDate(LocalDate.now());
         imageDetailEntity.setCategory(saveRequestDto.getCategory());
-        imageDetailEntity.setUserId(saveRequestDto.getUserId()); // ユーザーIDを設定
-
-        // ImageDetailEntity を保存し、Hibernate に ID と version を管理させる
+        imageDetailEntity.setUserId(saveRequestDto.getUserId());
         imageDetailRepository.save(imageDetailEntity);
 
         return flowerInfo;
@@ -79,12 +77,18 @@ public class DatabaseService {
         if (name == null || name.isEmpty()) {
             return null;
         }
-
         List<FlowersInfoEntity> foundEntities = flowersRepository.findByNameEnIsContainedIn(name);
 
         if (!foundEntities.isEmpty()) {
             return mapper.map(foundEntities.get(0), FlowersInfoDto.class);
         }
         return null;
+    }
+
+    public List<ImageDetailDto> getImagesByCategoryAndUser(String category, Integer userId) {
+        List<ImageDetailEntity> imageDetailEntities = imageDetailRepository.findByCategoryAndUserId(category, userId);
+        return imageDetailEntities.stream()
+                .map(entity -> mapper.map(entity, ImageDetailDto.class))
+                .collect(Collectors.toList());
     }
 }
