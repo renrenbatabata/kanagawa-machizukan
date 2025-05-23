@@ -167,20 +167,16 @@ class FlowerResultPage extends StatelessWidget {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      "分類 : $family科 $genius目",
+                                      "分類 : $family $genius",
                                       style: const TextStyle(fontSize: 16),
                                     ),
                                     const SizedBox(height: 8),
                                     // meaningがnullでなければ表示
                                     if (meaning != null)
                                       Text(
-                                        meaning!,
+                                        "花言葉 :$meaning",
                                         style: const TextStyle(fontSize: 16),
                                       ),
-                                    Text(
-                                      description,
-                                      style: const TextStyle(fontSize: 16),
-                                    ),
                                     Text(
                                       description,
                                       style: const TextStyle(fontSize: 16),

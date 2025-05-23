@@ -40,7 +40,7 @@ def analyze_flower(image):
             return {'error': 'お花を特定できませんでした'}
 
         best = suggestions[0]
-        name_en = best.get('name')
+        # name_en = best.get('name')
 
 
         info_response = requests.get(
@@ -56,7 +56,12 @@ def analyze_flower(image):
         if info_response.status_code == 200:
             info_data = info_response.json()
 
-            # common_names = info_data.get('result').get('classification').get('suggestions')[0].get('details').get('common_names')[0]
+            name_en = info_data.get('result').get('classification').get('suggestions')[0].get('details').get('common_names')[1]
+            print(name_en)
+
+
+            common_names = info_data.get('result').get('classification').get('suggestions')[0].get('details').get('common_names')
+
 
             taxonomy = info_data.get('result').get('classification').get('suggestions')[0].get('details').get('taxonomy')
 
@@ -76,7 +81,7 @@ def analyze_flower(image):
 
         deepl_client = deepl.DeepLClient(DEEPL_API_KEY)
 
-        name = deepl_client.translate_text(name_en, target_lang='JA').text
+        name_jp = deepl_client.translate_text(name_en, target_lang='JA').text
 
         # common_names = deepl_client.translate_text(common_names, target_lang='JA').text
         description = deepl_client.translate_text(description, target_lang='JA').text
@@ -118,8 +123,9 @@ def analyze_flower(image):
 #   final String meaning;
 #   final String description;
         return {
+            'common_names':common_names,
             'name_en':name_en,
-            'name': name,
+            'name_jp': name_jp,
             'family': family,
             'genius': genius,
             'description': description,
