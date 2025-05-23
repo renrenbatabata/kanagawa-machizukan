@@ -1,6 +1,3 @@
-# 忽略するファイルやフォルダ
-
-# application.properties（データベース接続情報やAPIキーを含む可能性がある）
 src/main/resources/application.properties
 
 # IntelliJ IDEA の設定ファイル
