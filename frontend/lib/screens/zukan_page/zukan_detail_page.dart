@@ -40,40 +40,47 @@ class ZukanDetailPage extends StatelessWidget {
                 children: [
                   const SizedBox(height: 30),
 
-                  // 名前と読み仮名
-                  Row(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 30.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              name,
-                              style: const TextStyle(
-                                fontSize: 30,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black87,
-                              ),
-                            ),
-                            if (hiraganaName.isNotEmpty) ...[
-                              const SizedBox(height: 8),
+                  // 名前と読み仮名、戻るボタンのセクション
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 25.0),
+                    child: Row(
+                      mainAxisAlignment:
+                          MainAxisAlignment.spaceBetween, // 両端に配置
+                      crossAxisAlignment: CrossAxisAlignment.start, // 上揃え
+                      children: [
+                        Expanded(
+                          // 名前と読み仮名が長い場合に対応
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
                               Text(
-                                hiraganaName,
+                                name,
                                 style: const TextStyle(
-                                  fontSize: 18,
-                                  color: Colors.black54,
+                                  fontSize: 30,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black87,
                                 ),
                               ),
+                              if (hiraganaName.isNotEmpty) ...[
+                                const SizedBox(height: 8),
+                                Text(
+                                  hiraganaName,
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    color: Colors.black54,
+                                  ),
+                                ),
+                              ],
                             ],
-                          ],
+                          ),
                         ),
-                      ),
-
-                      // 戻るボタン
-                      const SizedBox(width: 145.0),
-                      const CustomBackButton(),
-                    ],
+                        const SizedBox(width: 20.0), // 名前とボタンの間のスペース
+                        const Align(
+                          alignment: Alignment.topRight, // 右上に配置
+                          child: CustomBackButton(),
+                        ),
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 20),
 
@@ -97,7 +104,7 @@ class ZukanDetailPage extends StatelessWidget {
                           ),
                         ],
                       ),
-                      clipBehavior: Clip.hardEdge,
+                      clipBehavior: Clip.hardEdge, // 角丸に画像をクリップ
                       child:
                           (capturedImagePath != null &&
                                   File(capturedImagePath!).existsSync())
@@ -144,38 +151,41 @@ class ZukanDetailPage extends StatelessWidget {
 
                   // 「きほんデータ」セクション
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20.0,
+                    ), // 全体のパディングを調整
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start, // 左寄せにする
                       children: [
                         // タイトル部分
-                        Center(
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 25,
-                              vertical: 8,
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 25,
+                            vertical: 8,
+                          ),
+                          decoration: const BoxDecoration(
+                            color: AppColors.orange, // オレンジ
+                            borderRadius: BorderRadius.vertical(
+                              top: Radius.circular(12),
                             ),
-                            decoration: const BoxDecoration(
-                              color: AppColors.orange, // オレンジ
-                              borderRadius: BorderRadius.vertical(
-                                top: Radius.circular(12),
-                                bottom: Radius.circular(0),
-                              ),
-                            ),
-                            child: const Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(Icons.search, color: Colors.white),
-                                SizedBox(width: 4),
-                                Text(
-                                  "きほんデータ",
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 20,
-                                  ),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min, // コンテンツに合わせて幅を最小限に
+                            children: [
+                              Icon(
+                                Icons.description,
+                                color: Colors.white,
+                              ), // アイコンを変更
+                              SizedBox(width: 8), // アイコンとテキストの間隔を調整
+                              Text(
+                                "きほんデータ",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 20,
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
                         ),
                         // データ表示部分
@@ -183,7 +193,11 @@ class ZukanDetailPage extends StatelessWidget {
                           width: double.infinity,
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: const BorderRadius.only(
+                              bottomLeft: Radius.circular(12), // 下側を丸くする
+                              bottomRight: Radius.circular(12), // 下側を丸くする
+                              topRight: Radius.circular(12),
+                            ),
                             color: AppColors.orangeSub.withOpacity(
                               0.5,
                             ), // 半透明の薄いオレンジ

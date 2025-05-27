@@ -137,7 +137,7 @@ class _ZukanState extends State<Zukan> {
                   });
                 },
                 decoration: const InputDecoration(
-                  hintText: '検索...',
+                  hintText: 'なにをさがす？',
                   prefixIcon: Icon(Icons.search, color: Colors.grey),
                   border: InputBorder.none,
                   contentPadding: EdgeInsets.symmetric(vertical: 15.0),
@@ -198,6 +198,8 @@ class _ZukanState extends State<Zukan> {
               decoration: BoxDecoration(
                 color: categoryColors[selectedCategory]!["main"],
                 borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(2.0),
+                  topRight: Radius.circular(2.0),
                   bottomLeft: Radius.circular(10.0),
                   bottomRight: Radius.circular(10.0),
                 ),
@@ -218,7 +220,7 @@ class _ZukanState extends State<Zukan> {
               ),
             ),
           ),
-          const SizedBox(height: 20.0), // リストの下のスペースを調整
+          const SizedBox(height: 1.0), // リストの下のスペースを調整
         ],
       ),
       bottomNavigationBar: const Control(),

@@ -128,7 +128,7 @@ class ResultPage extends StatelessWidget {
                             child: const Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(Icons.search, color: Colors.white),
+                                Icon(Icons.description, color: Colors.white),
                                 SizedBox(width: 4),
                                 Text(
                                   "きほんデータ",
