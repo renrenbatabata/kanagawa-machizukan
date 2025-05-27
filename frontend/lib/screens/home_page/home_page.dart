@@ -1,7 +1,9 @@
+// lib/screens/home_page.dart
 import 'package:flutter/material.dart';
 import 'package:frontend/widgets/header.dart';
 import 'package:frontend/widgets/control.dart';
-import 'package:frontend/widgets/kanagawa_love_area.dart';
+import 'package:frontend/screens/home_page/kanagawa_love_area.dart';
+import 'package:frontend/screens/home_page/daily_quiz_card.dart'; // 新しく作成したDailyQuizCardをインポート
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -19,7 +21,7 @@ class HomePage extends StatelessWidget {
               child: Column(
                 children: [
                   const SizedBox(height: 16),
-                  const _TitleArea(),
+                  const DailyQuizCard(), // ここを新しいDailyQuizCardに置き換える
                   const SizedBox(height: 16),
                   Align(
                     alignment: Alignment.centerLeft,
@@ -55,44 +57,5 @@ class HomePage extends StatelessWidget {
   }
 }
 
-class _TitleArea extends StatelessWidget {
-  const _TitleArea();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: const Color.fromARGB(255, 255, 249, 237),
-        borderRadius: BorderRadius.circular(2),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha((0.1 * 255).toInt()),
-            blurRadius: 6,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: const [
-          Text(
-            '今日のかなわがくクイズ！！',
-            style: TextStyle(
-              fontSize: 25,
-              fontWeight: FontWeight.bold,
-              color: Color.fromARGB(255, 0, 0, 0),
-            ),
-          ),
-          SizedBox(height: 20),
-          Text(
-            '問題文',
-            style: TextStyle(fontSize: 18, color: Color.fromARGB(255, 0, 0, 0)),
-          ),
-        ],
-      ),
-    );
-  }
-}
+// 元々ここに_DailyQuizCardの定義がありましたが、削除しました。
+// _TitleAreaも不要になったため削除しています。

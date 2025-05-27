@@ -2,6 +2,10 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
+  static const Color correctAnswerGreen = Color(0xFF4CAF50); // 緑
+  static const Color wrongAnswerRed = Color(0xFFF44336); // 赤
+  static const Color selectedOptionBlue = Color(0xFF2196F3); // 青
+  static const Color mainGreen = Color(0xFF8BC34A); // メインの緑
   static const Color green = Color(0xFF6BBA79); // 下部ナビゲーションバーの色など
   static const Color greenSub = Color(0xFFB3E0C3); // 薄いグリーン
 
