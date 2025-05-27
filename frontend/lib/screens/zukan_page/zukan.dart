@@ -31,11 +31,13 @@ class _ZukanState extends State<Zukan> {
       imageUrl: 'images/sugiyama_jinja.jpg', // 実際の画像パスに置き換える
       discoveredDate: '2025年5月5日',
       isDiscovered: true,
+      category: 'じんじゃ', // ★追加：カテゴリ情報
     ),
     ZukanItem(
       id: 'kame_mystery',
       name: '謎のカメ太郎オブジェ',
       isDiscovered: false, // 未発見
+      category: 'かめ太郎', // ★追加：カテゴリ情報
       // hintはZukanCard内部で取得
     ),
     ZukanItem(
@@ -44,11 +46,13 @@ class _ZukanState extends State<Zukan> {
       imageUrl: 'images/jindaiji_jinja.jpg', // 実際の画像パスに置き換える
       discoveredDate: '2025年5月10日',
       isDiscovered: true,
+      category: 'じんじゃ', // ★追加：カテゴリ情報
     ),
     ZukanItem(
       id: 'sugiyama2',
       name: '杉山神社（2）', // 別の子安台の杉山神社などを想定
       isDiscovered: false, // 未発見
+      category: 'じんじゃ', // ★追加：カテゴリ情報
     ),
     ZukanItem(
       id: 'kame_park',
@@ -56,8 +60,24 @@ class _ZukanState extends State<Zukan> {
       discoveredDate: '2025年5月15日',
       imageUrl: 'images/kame_park.jpg', // 実際の画像パスに置き換える
       isDiscovered: true,
+      category: 'かめ太郎', // ★追加：カテゴリ情報
     ),
     // ここに他の神社、カメ太郎、お花などのZukanItemを追加していく
+    // 例: お花を追加
+    ZukanItem(
+      id: 'flower_sakura',
+      name: 'サクラ',
+      imageUrl: 'images/flower_sakura.jpg',
+      discoveredDate: '2025年4月1日',
+      isDiscovered: true,
+      category: 'おはな',
+    ),
+    ZukanItem(
+      id: 'flower_himawari',
+      name: 'ヒマワリ',
+      isDiscovered: false,
+      category: 'おはな',
+    ),
   ];
 
   @override
@@ -67,17 +87,10 @@ class _ZukanState extends State<Zukan> {
         allZukanItems.where((item) {
           if (selectedCategory == "すべて") {
             return true;
-          } else if (selectedCategory == "じんじゃ") {
-            return item.name.contains('神社') ||
-                item.name.contains('神明社') ||
-                item.name.contains('大神');
-          } else if (selectedCategory == "かめ太郎") {
-            return item.name.contains('カメ太郎');
-          } else if (selectedCategory == "おはな") {
-            // おはなに関連する条件をここに追加
-            return false; // 仮に全てfalse
+          } else {
+            // ここでZukanItemのcategoryプロパティを使ってフィルタリング
+            return item.category == selectedCategory;
           }
-          return false;
         }).toList();
 
     return Scaffold(
