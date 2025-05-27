@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/widgets/control.dart';
 import 'package:frontend/widgets/header.dart';
-import 'package:frontend/screens/zukan_page/zukan_card.dart';
+import 'package:frontend/screens/zukan_page/zukan_card.dart'; // ZukanCardをインポート
 import 'package:frontend/widgets/colors.dart';
 
 class Zukan extends StatefulWidget {
@@ -22,8 +22,64 @@ class _ZukanState extends State<Zukan> {
     "かめ太郎": {"main": AppColors.blue, "sub": AppColors.blueSub},
   };
 
+  // 仮の図鑑データ (実際はバックエンドから取得)
+  // ZukanItemのリストとして定義
+  List<ZukanItem> allZukanItems = [
+    ZukanItem(
+      id: 'sugiyama1',
+      name: '杉山神社',
+      imageUrl: 'images/sugiyama_jinja.jpg', // 実際の画像パスに置き換える
+      discoveredDate: '2025年5月5日',
+      isDiscovered: true,
+    ),
+    ZukanItem(
+      id: 'kame_mystery',
+      name: '謎のカメ太郎オブジェ',
+      isDiscovered: false, // 未発見
+      // hintはZukanCard内部で取得
+    ),
+    ZukanItem(
+      id: 'jindaiji',
+      name: '神大寺神明社',
+      imageUrl: 'images/jindaiji_jinja.jpg', // 実際の画像パスに置き換える
+      discoveredDate: '2025年5月10日',
+      isDiscovered: true,
+    ),
+    ZukanItem(
+      id: 'sugiyama2',
+      name: '杉山神社（2）', // 別の子安台の杉山神社などを想定
+      isDiscovered: false, // 未発見
+    ),
+    ZukanItem(
+      id: 'kame_park',
+      name: '公園のカメ太郎オブジェ',
+      discoveredDate: '2025年5月15日',
+      imageUrl: 'images/kame_park.jpg', // 実際の画像パスに置き換える
+      isDiscovered: true,
+    ),
+    // ここに他の神社、カメ太郎、お花などのZukanItemを追加していく
+  ];
+
   @override
   Widget build(BuildContext context) {
+    // 選択されたカテゴリに基づいてアイテムをフィルタリング
+    List<ZukanItem> filteredItems =
+        allZukanItems.where((item) {
+          if (selectedCategory == "すべて") {
+            return true;
+          } else if (selectedCategory == "じんじゃ") {
+            return item.name.contains('神社') ||
+                item.name.contains('神明社') ||
+                item.name.contains('大神');
+          } else if (selectedCategory == "かめ太郎") {
+            return item.name.contains('カメ太郎');
+          } else if (selectedCategory == "おはな") {
+            // おはなに関連する条件をここに追加
+            return false; // 仮に全てfalse
+          }
+          return false;
+        }).toList();
+
     return Scaffold(
       body: Column(
         children: [
@@ -31,55 +87,53 @@ class _ZukanState extends State<Zukan> {
           const SizedBox(height: 30.0),
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children:
-                  categoryColors.keys.map((category) {
-                    return GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          selectedCategory = category;
-                        });
-                      },
-                      child: Container(
-                        width: 100,
-                        height: 50,
-                        decoration: BoxDecoration(
-                          color:
-                              selectedCategory == category
-                                  ? categoryColors[category]!["main"]
-                                  : categoryColors[category]!["sub"],
-                          borderRadius: const BorderRadius.only(
-                            topLeft: Radius.circular(30.0),
-                            topRight: Radius.circular(30.0),
-                          ),
-                        ),
-                        alignment: Alignment.center,
-                        child: Text(
-                          category,
-                          style: TextStyle(
-                            fontSize: 20,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 1.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children:
+                    categoryColors.keys.map((category) {
+                      return GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            selectedCategory = category;
+                          });
+                        },
+                        child: Container(
+                          width: 100,
+                          height: 50,
+                          decoration: BoxDecoration(
                             color:
                                 selectedCategory == category
-                                    ? Colors.white
-                                    : Colors.black,
-                            fontWeight: FontWeight.bold,
+                                    ? categoryColors[category]!["main"]
+                                    : categoryColors[category]!["sub"],
+                            borderRadius: const BorderRadius.only(
+                              topLeft: Radius.circular(30.0),
+                              topRight: Radius.circular(30.0),
+                            ),
+                          ),
+                          alignment: Alignment.center,
+                          child: Text(
+                            category,
+                            style: TextStyle(
+                              fontSize: 20,
+                              color:
+                                  selectedCategory == category
+                                      ? Colors.white
+                                      : Colors.black,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
-                      ),
-                    );
-                  }).toList(),
+                      );
+                    }).toList(),
+              ),
             ),
           ),
-
-          Padding(
-            padding: const EdgeInsets.only(
-              left: 5.8,
-              right: 2.0,
-              top: 0,
-              bottom: -2.0,
-            ),
+          Expanded(
+            // Expandedで残りスペースをZukanCardのリストに割り当てる
             child: Container(
+              // カテゴリタブ下のコンテナのスタイルを調整
               decoration: BoxDecoration(
                 color: categoryColors[selectedCategory]!["main"],
                 borderRadius: const BorderRadius.only(
@@ -87,12 +141,25 @@ class _ZukanState extends State<Zukan> {
                   bottomRight: Radius.circular(10.0),
                 ),
               ),
-              child: const ZukanCard(),
+              child: ListView.builder(
+                padding: const EdgeInsets.only(
+                  top: 0.0,
+                  bottom: 20.0,
+                ), // リスト全体のパディング調整
+                itemCount: filteredItems.length,
+                itemBuilder: (context, index) {
+                  return ZukanCard(
+                    item: filteredItems[index],
+                    cardColor:
+                        AppColors.white, // 各カードの背景色は白などにして、メインコンテナの色と区別する
+                  );
+                },
+              ),
             ),
           ),
-          const Control(),
         ],
       ),
+      bottomNavigationBar: const Control(),
     );
   }
 }
