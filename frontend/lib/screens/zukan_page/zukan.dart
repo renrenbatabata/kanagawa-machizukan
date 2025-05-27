@@ -67,9 +67,7 @@ class _ZukanState extends State<Zukan> {
     ZukanItem(
       id: 'flower_sakura',
       name: 'サクラ',
-      imageUrl: 'images/flower_sakura.jpg',
-      discoveredDate: '2025年4月1日',
-      isDiscovered: true,
+      isDiscovered: false,
       category: 'おはな',
     ),
     ZukanItem(

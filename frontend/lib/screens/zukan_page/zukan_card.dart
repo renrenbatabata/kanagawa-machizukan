@@ -262,20 +262,7 @@ class _ZukanCardState extends State<ZukanCard> {
                               : Colors.grey[600],
                     ),
                   ),
-                  if (!widget.item.isDiscovered &&
-                      _displayedHint != null &&
-                      _displayedHint != 'ヒントを取得中...')
-                    Padding(
-                      padding: const EdgeInsets.only(top: 8.0),
-                      child: Text(
-                        _displayedHint!,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontStyle: FontStyle.italic,
-                          color: Colors.black54,
-                        ),
-                      ),
-                    ),
+
                   if (!widget.item.isDiscovered &&
                       _displayedHint == 'ヒントを取得中...')
                     const Padding(
