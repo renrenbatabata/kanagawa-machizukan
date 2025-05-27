@@ -70,7 +70,7 @@ class _ZukanState extends State<Zukan> {
     ZukanItem(
       id: 'flower_sakura',
       name: 'サクラ',
-      isDiscovered: true,
+      isDiscovered: false,
       category: 'おはな',
     ),
     ZukanItem(
@@ -218,6 +218,7 @@ class _ZukanState extends State<Zukan> {
               ),
             ),
           ),
+          const SizedBox(height: 20.0), // リストの下のスペースを調整
         ],
       ),
       bottomNavigationBar: const Control(),
