@@ -13,6 +13,9 @@ class Zukan extends StatefulWidget {
 
 class _ZukanState extends State<Zukan> {
   String selectedCategory = "すべて";
+  final TextEditingController _searchController =
+      TextEditingController(); // 検索テキストコントローラー
+  String _searchText = ""; // 検索テキストの状態
 
   // カテゴリと対応するカラー
   final Map<String, Map<String, Color>> categoryColors = {
@@ -27,7 +30,7 @@ class _ZukanState extends State<Zukan> {
   List<ZukanItem> allZukanItems = [
     ZukanItem(
       id: 'sugiyama1',
-      name: '杉山神社',
+      name: 'すぎやまじんじゃ　杉山神社',
       imageUrl: 'images/sugiyama_jinja.jpg', // 実際の画像パスに置き換える
       discoveredDate: '2025年5月5日',
       isDiscovered: true,
@@ -42,7 +45,7 @@ class _ZukanState extends State<Zukan> {
     ),
     ZukanItem(
       id: 'jindaiji',
-      name: '神大寺神明社',
+      name: 'じんだいでらじんじゃ　神大寺神明社',
       imageUrl: 'images/jindaiji_jinja.jpg', // 実際の画像パスに置き換える
       discoveredDate: '2025年5月10日',
       isDiscovered: true,
@@ -67,7 +70,7 @@ class _ZukanState extends State<Zukan> {
     ZukanItem(
       id: 'flower_sakura',
       name: 'サクラ',
-      isDiscovered: false,
+      isDiscovered: true,
       category: 'おはな',
     ),
     ZukanItem(
@@ -79,23 +82,70 @@ class _ZukanState extends State<Zukan> {
   ];
 
   @override
+  void dispose() {
+    _searchController.dispose(); // コントローラーを破棄
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    // 選択されたカテゴリに基づいてアイテムをフィルタリング
+    // 選択されたカテゴリと検索テキストに基づいてアイテムをフィルタリング
     List<ZukanItem> filteredItems =
         allZukanItems.where((item) {
-          if (selectedCategory == "すべて") {
-            return true;
-          } else {
-            // ここでZukanItemのcategoryプロパティを使ってフィルタリング
-            return item.category == selectedCategory;
-          }
+          final bool categoryMatches =
+              selectedCategory == "すべて" || item.category == selectedCategory;
+          final bool searchMatches =
+              _searchText.isEmpty ||
+              item.name.toLowerCase().contains(_searchText.toLowerCase()) ||
+              (item.discoveredDate != null &&
+                  item.discoveredDate!.toLowerCase().contains(
+                    _searchText.toLowerCase(),
+                  )); // 発見日も検索対象に含める
+
+          return categoryMatches && searchMatches;
         }).toList();
 
     return Scaffold(
       body: Column(
         children: [
           const ImageHeader(),
-          const SizedBox(height: 30.0),
+          const SizedBox(height: 20.0), // ヘッダーと検索バーの間のスペースを調整
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 20.0,
+              vertical: 10.0,
+            ),
+            child: Container(
+              height: 50,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(30.0),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.2),
+                    spreadRadius: 2,
+                    blurRadius: 5,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: TextField(
+                controller: _searchController,
+                onChanged: (value) {
+                  setState(() {
+                    _searchText = value;
+                  });
+                },
+                decoration: const InputDecoration(
+                  hintText: '検索...',
+                  prefixIcon: Icon(Icons.search, color: Colors.grey),
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.symmetric(vertical: 15.0),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 30.0), // 検索バーとカテゴリタブの間のスペースを調整
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Padding(
