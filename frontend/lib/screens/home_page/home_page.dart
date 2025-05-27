@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:frontend/widgets/header.dart';
 import 'package:frontend/widgets/control.dart';
 import 'package:frontend/screens/home_page/kanagawa_love_area.dart';
-import 'package:frontend/screens/home_page/daily_quiz_card.dart'; // 新しく作成したDailyQuizCardをインポート
+import 'package:frontend/screens/home_page/daily_quiz_card.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -23,28 +23,7 @@ class HomePage extends StatelessWidget {
                   const SizedBox(height: 16),
                   const DailyQuizCard(), // ここを新しいDailyQuizCardに置き換える
                   const SizedBox(height: 16),
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 20.0),
-                      child: Text(
-                        "あなたの",
-                        style: const TextStyle(
-                          fontSize: 30,
-                          fontWeight: FontWeight.bold,
-                          color: Color.fromARGB(255, 0, 0, 0),
-                        ),
-                      ),
-                    ),
-                  ),
-                  Text(
-                    "かながわくラブ度💕",
-                    style: const TextStyle(
-                      fontSize: 40,
-                      fontWeight: FontWeight.bold,
-                      color: Color.fromARGB(255, 0, 0, 0),
-                    ),
-                  ),
+
                   const KanagawaLoveArea(),
                 ],
               ),
@@ -56,6 +35,3 @@ class HomePage extends StatelessWidget {
     );
   }
 }
-
-// 元々ここに_DailyQuizCardの定義がありましたが、削除しました。
-// _TitleAreaも不要になったため削除しています。
