@@ -77,7 +77,7 @@ class ResultPage extends StatelessWidget {
                   ),
 
                   const SizedBox(height: 8),
-                  Text(today, style: const TextStyle(fontSize: 16)),
+                  Text('発見日: $today', style: const TextStyle(fontSize: 16)),
                   const SizedBox(height: 16),
                   // しゃしんをほぞんするボタン
                   ElevatedButton.icon(
@@ -128,7 +128,7 @@ class ResultPage extends StatelessWidget {
                             child: const Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(Icons.search, color: Colors.white),
+                                Icon(Icons.description, color: Colors.white),
                                 SizedBox(width: 4),
                                 Text(
                                   "きほんデータ",

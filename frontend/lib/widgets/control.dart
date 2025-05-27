@@ -24,7 +24,7 @@ class _ControlState extends State<Control> {
         Navigator.pushNamed(context, '/camera');
         break;
       case 2:
-        Navigator.pushNamed(context, '/zukan');
+        Navigator.pushNamed(context, '/zukan_page');
         break;
     }
   }

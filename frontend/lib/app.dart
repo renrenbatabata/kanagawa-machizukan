@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'screens/select_target/select_target_screen.dart';
 import 'screens/start_page/start_page.dart';
 import 'screens/home_page/home_page.dart';
+import 'screens/zukan_page/zukan.dart';
 
 // import 'screens/take_photo/take_photo_screen.dart';
 // import 'screens/preview/preview_screen.dart';
@@ -26,6 +27,7 @@ class MyApp extends StatelessWidget {
         '/home_page': (context) => const HomePage(),
         '/select_target': (context) => const SelectTargetScreen(),
         '/camera': (context) => const SelectTargetScreen(),
+        '/zukan_page': (context) => const Zukan(),
       },
     );
   }
