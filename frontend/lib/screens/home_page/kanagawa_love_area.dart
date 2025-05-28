@@ -9,7 +9,7 @@ class KanagawaLoveArea extends StatelessWidget {
   // ダミーデータ（実際のアプリでは、ユーザーの発見状況などから動的に取得します）
   // ZukanItemなどの実際のデータ構造と連携して、totalやcollectedを計算するロジックが必要になります。
   final int totalItems = 100; // 例: 全ての図鑑アイテムの合計数
-  final int collectedItems = 65; // 例: ユーザーが発見済みの図鑑アイテムの合計数
+  final int collectedItems = 25; // 例: ユーザーが発見済みの図鑑アイテムの合計数
 
   final List<LoveCategoryData> categoriesData = const [
     LoveCategoryData(
@@ -38,15 +38,6 @@ class KanagawaLoveArea extends StatelessWidget {
       color: AppColors.red,
       subColor: AppColors.redSub,
       categoryType: 'じんじゃ',
-    ),
-    LoveCategoryData(
-      label: 'すべて',
-      icon: Icons.all_inclusive,
-      total: 40,
-      collected: 27,
-      color: AppColors.orange,
-      subColor: AppColors.orangeSub,
-      categoryType: 'すべて',
     ),
   ];
 
@@ -85,7 +76,8 @@ class KanagawaLoveArea extends StatelessWidget {
             children:
                 categoriesData
                     .map((data) => _buildCategoryLoveTile(context, data))
-                    .toList(),
+                    .toList()
+                  ..add(Image.asset("images/kametarou.png")),
           ),
         ],
       ),
@@ -111,7 +103,7 @@ class KanagawaLoveArea extends StatelessWidget {
       child: Column(
         children: [
           Text(
-            'あなたのかながわくラブ度♡',
+            'きみの かなわがく らぶど💕',
             style: const TextStyle(
               fontSize: 28, // 文字サイズを大きく
               fontWeight: FontWeight.w900, // さらに太く
@@ -135,9 +127,9 @@ class KanagawaLoveArea extends StatelessWidget {
                   ),
                 ),
                 const Text(
-                  'こ', // 単位
+                  '%', // 単位
                   style: TextStyle(
-                    fontSize: 25, // 単位の文字サイズ
+                    fontSize: 30, // 単位の文字サイズ
                     fontWeight: FontWeight.w900, // さらに太く
                     color: AppColors.mainGreen,
                   ),
@@ -275,13 +267,13 @@ class KanagawaLoveArea extends StatelessWidget {
 
 /// 各カテゴリのデータを保持するクラス
 class LoveCategoryData {
-  final String label; // カテゴリ名（例: おはな）
-  final IconData icon; // 表示するアイコン
-  final int total; // そのカテゴリの全アイテム数
-  final int collected; // ユーザーが収集済みのアイテム数
-  final Color color; // カテゴリのメインカラー
-  final Color subColor; // カテゴリのサブカラー（現在は未使用だが保持）
-  final String categoryType; // 実際のカテゴリ識別子（遷移先などで使用）
+  final String label;
+  final IconData icon;
+  final int total;
+  final int collected;
+  final Color color;
+  final Color subColor;
+  final String categoryType;
 
   const LoveCategoryData({
     required this.label,

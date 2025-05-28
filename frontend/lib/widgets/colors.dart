@@ -23,5 +23,6 @@ class AppColors {
 
   static const Color white = Colors.white;
   static const Color black = Colors.black;
+
   // 必要に応じて他の色も追加
 }
