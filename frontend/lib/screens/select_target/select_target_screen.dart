@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:frontend/screens/take_photo/take_photo_screen.dart';
+import 'package:frontend/widgets/control.dart';
 import 'package:frontend/widgets/header.dart';
 import 'package:frontend/widgets/back_button.dart';
 
@@ -18,14 +19,17 @@ class SelectTargetScreen extends StatelessWidget {
           Expanded(
             child: SafeArea(
               child: Padding(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.only(
+                  left: 10.0, // 左側のパディング
+                  right: 10.0, // 右側のパディング
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // もどるボタン
                     const CustomBackButton(),
 
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 12),
                     Center(
                       child: const Text(
                         'しゃしん を とりたいのを\nえらぼう！',
@@ -90,6 +94,7 @@ class SelectTargetScreen extends StatelessWidget {
           ),
         ],
       ),
+      bottomNavigationBar: const Control(),
     );
   }
 }
