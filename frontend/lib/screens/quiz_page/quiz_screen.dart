@@ -1,5 +1,6 @@
 // lib/screens/quiz_page/quiz_screen.dart
 import 'package:flutter/material.dart';
+import 'package:frontend/widgets/ad_banner.dart';
 import 'package:frontend/widgets/header.dart'; // ImageHeaderをインポート
 import 'package:frontend/widgets/control.dart'; // Controlをインポート
 import 'package:frontend/widgets/colors.dart'; // AppColorsをインポート (ColorExtensionもここから利用されます)
@@ -403,10 +404,19 @@ class _QuizScreenState extends State<QuizScreen> {
                         ),
                       ],
                     ),
+
+                  const SizedBox(height: 30),
+                  Center(
+                    child: const AdBanner(
+                      adUnitId:
+                          'ca-app-pub-3940256099942544/6300978111', // ホーム画面用のテストID
+                    ),
+                  ),
                 ],
               ),
             ),
           ),
+
           const Control(), // 共通フッター
         ],
       ),

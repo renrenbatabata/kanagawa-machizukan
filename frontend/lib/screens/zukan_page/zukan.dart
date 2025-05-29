@@ -222,9 +222,9 @@ class _ZukanState extends State<Zukan> {
             ),
           ),
           const SizedBox(height: 10.0),
-          const AdBanner(
-            adUnitId: 'ca-app-pub-3940256099942544/6300978111', // ホーム画面用のテストID
-          ), // リストの下のスペースを調整
+          const AdBanner(adUnitId: 'ca-app-pub-3940256099942544/6300978111'),
+
+          const SizedBox(height: 10.0),
         ],
       ),
       bottomNavigationBar: const Control(),
