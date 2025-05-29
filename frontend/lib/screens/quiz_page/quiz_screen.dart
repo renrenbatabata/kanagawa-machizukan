@@ -4,21 +4,7 @@ import 'package:frontend/widgets/header.dart'; // ImageHeaderをインポート
 import 'package:frontend/widgets/control.dart'; // Controlをインポート
 import 'package:frontend/widgets/colors.dart'; // AppColorsをインポート (ColorExtensionもここから利用されます)
 import 'package:frontend/screens/quiz_page/quiz_data.dart'; // quizQuestionsをインポート
-
-// ★削除：ColorExtensionはcolors.dartに移動済みなので、ここからは削除します
-// extension on Color {
-//   Color darker() {
-//     int r = (red * 0.8).round();
-//     int g = (green * 0.8).round();
-//     int b = (blue * 0.8).round();
-//     return Color.fromARGB(
-//       alpha,
-//       r.clamp(0, 255),
-//       g.clamp(0, 255),
-//       b.clamp(0, 255),
-//     );
-//   }
-// }
+import 'dart:math'; // Randomクラスを使用するためにインポート
 
 class QuizScreen extends StatefulWidget {
   const QuizScreen({super.key});
@@ -28,11 +14,41 @@ class QuizScreen extends StatefulWidget {
 }
 
 class _QuizScreenState extends State<QuizScreen> {
+  List<QuizQuestion> _dailyQuizQuestions = []; // その日のクイズ問題リスト
   int _currentQuestionIndex = 0; // 現在の問題のインデックス
   int? _selectedOptionIndex; // 選択された選択肢のインデックス
   bool _isAnswerChecked = false; // 回答がチェックされたかどうかのフラグ
   int _score = 0; // スコア
   bool _quizFinished = false; // クイズが終了したかどうかのフラグ
+
+  @override
+  void initState() {
+    super.initState();
+    _generateDailyQuiz(); // 画面が初期化されるときにその日のクイズを生成
+  }
+
+  // その日のクイズ問題を生成する関数
+  void _generateDailyQuiz() {
+    final int todaySeed =
+        DateTime.now().day +
+        DateTime.now().month * 100 +
+        DateTime.now().year * 10000;
+    final Random random = Random(todaySeed);
+
+    // quizQuestionsをシャッフル
+    final List<QuizQuestion> shuffledQuestions = List.from(quizQuestions);
+    shuffledQuestions.shuffle(random);
+
+    // 最大5問に制限
+    _dailyQuizQuestions = shuffledQuestions.take(5).toList();
+
+    // 状態をリセット
+    _currentQuestionIndex = 0;
+    _selectedOptionIndex = null;
+    _isAnswerChecked = false;
+    _score = 0;
+    _quizFinished = false;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +66,7 @@ class _QuizScreenState extends State<QuizScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                'クイズおわり！\n${quizQuestions.length}問中 $_score問せいかい！',
+                'クイズおわり！\n${_dailyQuizQuestions.length}問中 $_score問せいかい！',
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 28,
@@ -62,11 +78,7 @@ class _QuizScreenState extends State<QuizScreen> {
               ElevatedButton.icon(
                 onPressed: () {
                   setState(() {
-                    _currentQuestionIndex = 0;
-                    _selectedOptionIndex = null;
-                    _isAnswerChecked = false;
-                    _score = 0;
-                    _quizFinished = false;
+                    _generateDailyQuiz(); // 新しいクイズを生成してリセット
                   });
                 },
                 icon: const Icon(Icons.refresh),
@@ -117,7 +129,8 @@ class _QuizScreenState extends State<QuizScreen> {
     }
 
     // 現在の問題
-    final QuizQuestion currentQuestion = quizQuestions[_currentQuestionIndex];
+    final QuizQuestion currentQuestion =
+        _dailyQuizQuestions[_currentQuestionIndex];
 
     return Scaffold(
       backgroundColor: const Color(0xFFFFF6E5),
@@ -134,7 +147,7 @@ class _QuizScreenState extends State<QuizScreen> {
                   Align(
                     alignment: Alignment.centerRight,
                     child: Text(
-                      '${_currentQuestionIndex + 1} / ${quizQuestions.length}',
+                      '${_currentQuestionIndex + 1} / ${_dailyQuizQuestions.length}',
                       style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -350,7 +363,7 @@ class _QuizScreenState extends State<QuizScreen> {
                             onPressed: () {
                               setState(() {
                                 if (_currentQuestionIndex <
-                                    quizQuestions.length - 1) {
+                                    _dailyQuizQuestions.length - 1) {
                                   _currentQuestionIndex++;
                                   _selectedOptionIndex = null;
                                   _isAnswerChecked = false;
@@ -360,12 +373,14 @@ class _QuizScreenState extends State<QuizScreen> {
                               });
                             },
                             icon: Icon(
-                              _currentQuestionIndex < quizQuestions.length - 1
+                              _currentQuestionIndex <
+                                      _dailyQuizQuestions.length - 1
                                   ? Icons.arrow_forward
                                   : Icons.done_all,
                             ),
                             label: Text(
-                              _currentQuestionIndex < quizQuestions.length - 1
+                              _currentQuestionIndex <
+                                      _dailyQuizQuestions.length - 1
                                   ? 'つぎのもんだいへ！'
                                   : 'クイズおわり！',
                             ),
