@@ -123,7 +123,7 @@ class _ZukanState extends State<Zukan> {
               selectedCategory: selectedCategory,
               filteredItems: filteredItems,
               categoryColors: categoryColors,
-              allZukanItems: allZukanItems, // メッセージ表示のために渡す
+              allZukanItems: allZukanItems,
             ),
           ),
           const SizedBox(height: 10.0),

@@ -14,7 +14,7 @@ class KanagawaLoveArea extends StatelessWidget {
   final List<LoveCategoryData> categoriesData = const [
     LoveCategoryData(
       label: 'おはな',
-      icon: Icons.local_florist,
+      icon: Icons.local_florist, // 花のアイコン
       total: 20,
       collected: 12,
       color: AppColors.pink,
@@ -97,7 +97,7 @@ class KanagawaLoveArea extends StatelessWidget {
     return Column(
       children: [
         Text(
-          'きみの ずかん たっせいど🏆',
+          '🏆きみの ずかん たっせいど',
           style: const TextStyle(
             fontSize: 28, // 文字サイズを大きく
             fontWeight: FontWeight.w900, // さらに太く
