@@ -1,24 +1,8 @@
 // lib/widgets/daily_quiz_card.dart
 import 'package:flutter/material.dart';
 import 'package:frontend/screens/quiz_page/quiz_data.dart'; // quizQuestionsをインポート
-import 'package:frontend/widgets/colors.dart'; // AppColorsをインポート
+import 'package:frontend/widgets/colors.dart'; // AppColorsとColorExtensionをインポート
 import 'package:frontend/screens/quiz_page/quiz_screen.dart'; // QuizScreenをインポート
-
-// ColorExtensionはquiz_screen.dartまたはcolors.dartに置くのが理想ですが、
-// アプリ全体で使う場合はcolors.dartに移動することをお勧めします。
-extension ColorExtension on Color {
-  Color darker() {
-    int r = (red * 0.8).round();
-    int g = (green * 0.8).round();
-    int b = (blue * 0.8).round();
-    return Color.fromARGB(
-      alpha,
-      r.clamp(0, 255),
-      g.clamp(0, 255),
-      b.clamp(0, 255),
-    );
-  }
-}
 
 // ホーム画面に表示する簡易クイズカード
 class DailyQuizCard extends StatefulWidget {
@@ -29,11 +13,35 @@ class DailyQuizCard extends StatefulWidget {
 }
 
 class _DailyQuizCardState extends State<DailyQuizCard> {
-  // 今日表示する問題（ここではシンプルにリストの最初の問題を使用）
-  // 実際には日付などに基づいて問題を切り替えるロジックが必要になります
-  final QuizQuestion _dailyQuestion = quizQuestions[0];
+  late QuizQuestion _dailyQuestion; // late修飾子を追加
   int? _selectedOptionIndex; // 選択された選択肢のインデックス
   bool _isAnswerChecked = false; // 回答がチェックされたかどうかのフラグ
+
+  @override
+  void initState() {
+    super.initState();
+    _setDailyQuestion(); // 日替わり問題をセットする関数を呼び出す
+  }
+
+  // 日替わり問題をセットする関数
+  void _setDailyQuestion() {
+    final now = DateTime.now();
+    // 今日の日付 (年、月、日) を使って、その年が始まってからの通算日数を計算
+    // 例: 1月1日なら1、1月2日なら2、など
+    // これを問題リストのインデックスとして利用します
+    final dayOfYear = now.difference(DateTime(now.year, 1, 1)).inDays + 1;
+
+    // quizQuestionsリストの長さで割った余りをインデックスとして使うことで、
+    // 問題リストの範囲内で問題を循環させます。
+    // インデックスは0から始まるため、-1と+1で調整します。
+    final questionIndex = (dayOfYear - 1) % quizQuestions.length;
+
+    setState(() {
+      _dailyQuestion = quizQuestions[questionIndex];
+      _selectedOptionIndex = null; // 新しい問題がセットされたら選択肢をリセット
+      _isAnswerChecked = false; // 回答済みフラグをリセット
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -110,8 +118,10 @@ class _DailyQuizCardState extends State<DailyQuizCard> {
                         _isAnswerChecked
                             ? (_selectedOptionIndex ==
                                     _dailyQuestion.correctOptionIndex
-                                ? AppColors.correctAnswerGreen.darker()
-                                : AppColors.wrongAnswerRed.darker())
+                                ? AppColors.correctAnswerGreen
+                                    .darker() // darker()メソッドを使用
+                                : AppColors.wrongAnswerRed
+                                    .darker()) // darker()メソッドを使用
                             : Colors.black54,
                     fontWeight: FontWeight.bold,
                   ),
@@ -120,11 +130,11 @@ class _DailyQuizCardState extends State<DailyQuizCard> {
                     _isAnswerChecked
                         ? (_selectedOptionIndex ==
                                 _dailyQuestion.correctOptionIndex
-                            ? Icon(
+                            ? const Icon(
                               Icons.check_circle,
                               color: AppColors.correctAnswerGreen,
                             )
-                            : Icon(
+                            : const Icon(
                               Icons.cancel,
                               color: AppColors.wrongAnswerRed,
                             ))
@@ -153,11 +163,13 @@ class _DailyQuizCardState extends State<DailyQuizCard> {
                             color:
                                 _isAnswerChecked &&
                                         idx == _dailyQuestion.correctOptionIndex
-                                    ? AppColors.correctAnswerGreen.darker()
+                                    ? AppColors.correctAnswerGreen
+                                        .darker() // darker()メソッドを使用
                                     : _isAnswerChecked &&
                                         idx == _selectedOptionIndex &&
                                         idx != _dailyQuestion.correctOptionIndex
-                                    ? AppColors.wrongAnswerRed.darker()
+                                    ? AppColors.wrongAnswerRed
+                                        .darker() // darker()メソッドを使用
                                     : Colors.black87,
                             fontWeight: FontWeight.bold,
                           ),
@@ -203,6 +215,7 @@ class _DailyQuizCardState extends State<DailyQuizCard> {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                   ),
+                  elevation: 2,
                 ),
               ),
             )

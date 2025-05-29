@@ -2,8 +2,23 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/widgets/header.dart'; // ImageHeaderをインポート
 import 'package:frontend/widgets/control.dart'; // Controlをインポート
-import 'package:frontend/widgets/colors.dart'; // AppColorsをインポート
+import 'package:frontend/widgets/colors.dart'; // AppColorsをインポート (ColorExtensionもここから利用されます)
 import 'package:frontend/screens/quiz_page/quiz_data.dart'; // quizQuestionsをインポート
+
+// ★削除：ColorExtensionはcolors.dartに移動済みなので、ここからは削除します
+// extension on Color {
+//   Color darker() {
+//     int r = (red * 0.8).round();
+//     int g = (green * 0.8).round();
+//     int b = (blue * 0.8).round();
+//     return Color.fromARGB(
+//       alpha,
+//       r.clamp(0, 255),
+//       g.clamp(0, 255),
+//       b.clamp(0, 255),
+//     );
+//   }
+// }
 
 class QuizScreen extends StatefulWidget {
   const QuizScreen({super.key});
@@ -273,6 +288,7 @@ class _QuizScreenState extends State<QuizScreen> {
                   // 解説と次へボタン
                   if (_isAnswerChecked)
                     Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const SizedBox(height: 10),
                         Container(
@@ -319,7 +335,7 @@ class _QuizScreenState extends State<QuizScreen> {
                               Text(
                                 currentQuestion.explanation,
                                 style: const TextStyle(
-                                  fontSize: 16,
+                                  fontSize: 16, // 解説のフォントサイズを調整
                                   color: Colors.black87,
                                   height: 1.5,
                                 ),
@@ -328,42 +344,45 @@ class _QuizScreenState extends State<QuizScreen> {
                           ),
                         ),
                         const SizedBox(height: 20),
-                        ElevatedButton.icon(
-                          onPressed: () {
-                            setState(() {
-                              if (_currentQuestionIndex <
-                                  quizQuestions.length - 1) {
-                                _currentQuestionIndex++;
-                                _selectedOptionIndex = null;
-                                _isAnswerChecked = false;
-                              } else {
-                                _quizFinished = true; // クイズ終了
-                              }
-                            });
-                          },
-                          icon: Icon(
-                            _currentQuestionIndex < quizQuestions.length - 1
-                                ? Icons.arrow_forward
-                                : Icons.done_all,
-                          ),
-                          label: Text(
-                            _currentQuestionIndex < quizQuestions.length - 1
-                                ? 'つぎのもんだいへ！'
-                                : 'クイズおわり！',
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.orange,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 25,
-                              vertical: 15,
+                        Center(
+                          // 次へボタンを中央寄せ
+                          child: ElevatedButton.icon(
+                            onPressed: () {
+                              setState(() {
+                                if (_currentQuestionIndex <
+                                    quizQuestions.length - 1) {
+                                  _currentQuestionIndex++;
+                                  _selectedOptionIndex = null;
+                                  _isAnswerChecked = false;
+                                } else {
+                                  _quizFinished = true; // クイズ終了
+                                }
+                              });
+                            },
+                            icon: Icon(
+                              _currentQuestionIndex < quizQuestions.length - 1
+                                  ? Icons.arrow_forward
+                                  : Icons.done_all,
                             ),
-                            textStyle: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
+                            label: Text(
+                              _currentQuestionIndex < quizQuestions.length - 1
+                                  ? 'つぎのもんだいへ！'
+                                  : 'クイズおわり！',
                             ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.orange,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 25,
+                                vertical: 15,
+                              ),
+                              textStyle: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30),
+                              ),
                             ),
                           ),
                         ),
@@ -376,21 +395,6 @@ class _QuizScreenState extends State<QuizScreen> {
           const Control(), // 共通フッター
         ],
       ),
-    );
-  }
-}
-
-// AppColorsにクイズ用の色を追加 (colors.dartに追加してください)
-extension on Color {
-  Color darker() {
-    int r = (red * 0.8).round();
-    int g = (green * 0.8).round();
-    int b = (blue * 0.8).round();
-    return Color.fromARGB(
-      alpha,
-      r.clamp(0, 255),
-      g.clamp(0, 255),
-      b.clamp(0, 255),
     );
   }
 }

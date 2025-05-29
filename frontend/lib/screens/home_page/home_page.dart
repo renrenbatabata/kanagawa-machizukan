@@ -19,7 +19,7 @@ class HomePage extends StatelessWidget {
               child: Column(
                 children: [
                   const SizedBox(height: 16),
-                  const DailyQuizCard(), // ここを新しいDailyQuizCardに置き換える
+                  const DailyQuizCard(),
                   const SizedBox(height: 16),
 
                   const KanagawaLoveArea(),

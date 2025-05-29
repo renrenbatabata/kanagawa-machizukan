@@ -1,4 +1,3 @@
-// lib/widgets/colors.dart
 import 'package:flutter/material.dart';
 
 class AppColors {
@@ -23,6 +22,20 @@ class AppColors {
 
   static const Color white = Colors.white;
   static const Color black = Colors.black;
+}
 
-  // 必要に応じて他の色も追加
+extension ColorExtension on Color {
+  /// 現在の色よりも少し暗い色を返します。
+  /// 各RGB成分を0.8倍して計算し、0〜255の範囲に収めます。
+  Color darker() {
+    int r = (red * 0.8).round();
+    int g = (green * 0.8).round();
+    int b = (blue * 0.8).round();
+    return Color.fromARGB(
+      alpha,
+      r.clamp(0, 255),
+      g.clamp(0, 255),
+      b.clamp(0, 255),
+    );
+  }
 }
