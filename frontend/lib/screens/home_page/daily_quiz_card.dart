@@ -64,9 +64,9 @@ class _DailyQuizCardState extends State<DailyQuizCard> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            '今日のかながわくクイズ！！',
+            '💡今日のかながわくクイズ',
             style: TextStyle(
-              fontSize: 20, // タイトルフォントをさらに小さく
+              fontSize: 22, // タイトルフォント
               fontWeight: FontWeight.bold,
               color: Color.fromARGB(255, 0, 0, 0),
             ),

@@ -59,117 +59,97 @@ class KanagawaLoveArea extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        children: [
-          // 総合ラブ度タイル（全体の進捗を表示）
-          _buildOverallLoveTile(context),
-          const SizedBox(height: 20), // 間隔を広げて見やすく
-          // カテゴリ別ラブ度タイル（各カテゴリの進捗を表示）
-          GridView.count(
-            shrinkWrap: true, // GridViewのサイズを子ウィジェットに合わせて縮小
-            physics: const NeverScrollableScrollPhysics(), // GridViewのスクロールを無効化
-            crossAxisCount: 2, // 2列で表示
-            crossAxisSpacing: 16, // 列間のスペース
-            mainAxisSpacing: 16, // 行間のスペース
-            children:
-                categoriesData
-                    .map((data) => _buildCategoryLoveTile(context, data))
-                    .toList()
-                  ..add(Image.asset("images/kametarou.png")),
-          ),
-        ],
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(2), // 角をさらに丸く
+        color: const Color.fromARGB(255, 254, 255, 253),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            const SizedBox(height: 20),
+            // 総合ラブ度タイル（全体の進捗を表示）
+            _buildOverallLoveTile(context),
+            const SizedBox(height: 20), // 間隔を広げて見やすく
+            // カテゴリ別ラブ度タイル（各カテゴリの進捗を表示）
+            GridView.count(
+              shrinkWrap: true, // GridViewのサイズを子ウィジェットに合わせて縮小
+              physics:
+                  const NeverScrollableScrollPhysics(), // GridViewのスクロールを無効化
+              crossAxisCount: 2, // 2列で表示
+              crossAxisSpacing: 16, // 列間のスペース
+              mainAxisSpacing: 16, // 行間のスペース
+              children:
+                  categoriesData
+                      .map((data) => _buildCategoryLoveTile(context, data))
+                      .toList()
+                    ..add(Image.asset("images/kametarou.png")),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   /// 総合ラブ度タイルを構築するウィジェット
   Widget _buildOverallLoveTile(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20), // 角をさらに丸く
-        color: Colors.white, // 背景色
-        boxShadow: [
-          // 影
-          BoxShadow(
-            color: const Color.fromARGB(
-              255,
-              26,
-              25,
-              25,
-            ).withOpacity(0.18), // 影の色と透明度を調整
-            blurRadius: 10, // 影のぼかし具合
-            offset: const Offset(0, 5), // 影のオフセット
+    return Column(
+      children: [
+        Text(
+          'きみの ずかん たっせいど🏆',
+          style: const TextStyle(
+            fontSize: 28, // 文字サイズを大きく
+            fontWeight: FontWeight.w900, // さらに太く
+            color: Colors.black87,
           ),
-        ],
-      ),
-      padding: const EdgeInsets.all(25), // 内側のパディングを増やす
-      child: Column(
-        children: [
-          Text(
-            'きみの ずかん たっせいど🏆',
-            style: const TextStyle(
-              fontSize: 28, // 文字サイズを大きく
-              fontWeight: FontWeight.w900, // さらに太く
-              color: Colors.black87,
-            ),
-          ),
-          const SizedBox(height: 20), // 間隔を広げて見やすく
-          CircularPercentIndicator(
-            radius: 85.0, // 円の半径を調整
-            lineWidth: 18.0, // 線幅をさらに太く
-            percent: overallProgress,
-            center: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  '$collectedItems', // 獲得数を表示
-                  style: const TextStyle(
-                    fontSize: 50, // 数字をさらに大きく
-                    fontWeight: FontWeight.w900, // さらに太く
-                    color: AppColors.mainGreen, // メインカラー
-                  ),
-                ),
-                const Text(
-                  '%', // 単位
-                  style: TextStyle(
-                    fontSize: 30, // 単位の文字サイズ
-                    fontWeight: FontWeight.w900, // さらに太く
-                    color: AppColors.mainGreen,
-                  ),
-                ),
-              ],
-            ),
-            circularStrokeCap: CircularStrokeCap.round, // プログレスバーの端を丸く
-            backgroundColor: Colors.grey.shade100, // 未達成部分の色をより明るく
-            progressColor: AppColors.mainGreen, // 達成部分の色
-            animation: true, // アニメーションを有効に
-            animateFromLastPercent: true, // 前回のパーセントからアニメーション
-            animationDuration: 1500, // アニメーションの時間を長く
-            footer: Padding(
-              padding: const EdgeInsets.only(top: 20), // フッターとの間隔
-              child: Text(
-                overallProgressMessage, // 進捗メッセージ
-                textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 30), // 間隔を広げて見やすく
+        CircularPercentIndicator(
+          radius: 85.0, // 円の半径を調整
+          lineWidth: 18.0, // 線幅をさらに太く
+          percent: overallProgress,
+          center: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                '$collectedItems', // 獲得数を表示
                 style: const TextStyle(
-                  fontSize: 18, // メッセージの文字サイズ
-                  fontWeight: FontWeight.w800, // 太字に
-                  color: Colors.black54,
+                  fontSize: 50, // 数字をさらに大きく
+                  fontWeight: FontWeight.w900, // さらに太く
+                  color: AppColors.mainGreen, // メインカラー
                 ),
               ),
-            ),
-            widgetIndicator:
-                overallProgress < 1.0
-                    ? const Icon(
-                      Icons.arrow_forward_ios,
-                      size: 20,
-                      color: Colors.white,
-                    )
-                    : null, // 矢印インジケーター
+              const Text(
+                '％', // 単位
+                style: TextStyle(
+                  fontSize: 23, // 単位の文字サイズ
+                  fontWeight: FontWeight.w900, // さらに太く
+                  color: AppColors.mainGreen,
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+          circularStrokeCap: CircularStrokeCap.round, // プログレスバーの端を丸く
+          backgroundColor: Colors.grey.shade100, // 未達成部分の色をより明るく
+          progressColor: AppColors.mainGreen, // 達成部分の色
+          animation: true, // アニメーションを有効に
+          animateFromLastPercent: true, // 前回のパーセントからアニメーション
+          animationDuration: 1500, // アニメーションの時間を長く
+          footer: Padding(
+            padding: const EdgeInsets.only(top: 20), // フッターとの間隔
+            child: Text(
+              overallProgressMessage, // 進捗メッセージ
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 18, // メッセージの文字サイズ
+                fontWeight: FontWeight.w800, // 太字に
+                color: Colors.black54,
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
