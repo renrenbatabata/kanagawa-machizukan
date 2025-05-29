@@ -14,7 +14,7 @@ Future<Map<String, dynamic>?> uploadImageToPythonServer(
   String category,
   Position position,
 ) async {
-  final uri = Uri.parse('http://10.17.8.110:5000/app');
+  final uri = Uri.parse('http://10.17.8.230:8080/analyze');
 
   final request = http.MultipartRequest('POST', uri);
   request.files.add(await http.MultipartFile.fromPath('image', imageFile.path));

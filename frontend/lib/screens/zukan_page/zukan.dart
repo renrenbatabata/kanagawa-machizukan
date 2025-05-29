@@ -67,18 +67,18 @@ class _ZukanState extends State<Zukan> {
     ),
     // ここに他の神社、カメ太郎、お花などのZukanItemを追加していく
     // 例: お花を追加
-    ZukanItem(
-      id: 'flower_sakura',
-      name: 'サクラ',
-      isDiscovered: false,
-      category: 'おはな',
-    ),
-    ZukanItem(
-      id: 'flower_himawari',
-      name: 'ヒマワリ',
-      isDiscovered: false,
-      category: 'おはな',
-    ),
+    // ZukanItem(
+    //   id: 'flower_sakura',
+    //   name: 'サクラ',
+    //   isDiscovered: false,
+    //   category: 'おはな',
+    // ),
+    // ZukanItem(
+    //   id: 'flower_himawari',
+    //   name: 'ヒマワリ',
+    //   isDiscovered: false,
+    //   category: 'おはな',
+    // ),
   ];
 
   @override
@@ -220,7 +220,7 @@ class _ZukanState extends State<Zukan> {
               ),
             ),
           ),
-          const SizedBox(height: 1.0), // リストの下のスペースを調整
+          const SizedBox(height: 10.0), // リストの下のスペースを調整
         ],
       ),
       bottomNavigationBar: const Control(),

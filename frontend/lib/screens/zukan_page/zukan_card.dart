@@ -154,9 +154,20 @@ class _ZukanCardState extends State<ZukanCard> {
 
   @override
   Widget build(BuildContext context) {
+    final bool isFlowerCategory = widget.item.category == 'flower';
+    final bool showCallToAction = isFlowerCategory && !widget.item.isDiscovered;
+
     return GestureDetector(
       onTap: () async {
-        if (!widget.item.isDiscovered && _displayedHint == null) {
+        if (widget.item.isDiscovered) {
+          // 発見済みの場合、詳細情報を取得して詳細ページへ遷移
+          final details = await _fetchDetails(widget.item.id);
+          _showDetailsPage(context, details);
+        } else if (showCallToAction) {
+          // ここで showCallToAction をチェック
+          // 「撮影して図鑑に登録しよう！」の場合、何もしないか、カメラ起動などのアクションを促す
+          print('カメラ起動を促すアクション'); // デバッグ用
+        } else if (!widget.item.isDiscovered && _displayedHint == null) {
           // 未発見かつヒント未表示の場合、ヒントを取得して表示
           setState(() {
             _displayedHint = 'ヒントを取得中...'; // ローディング表示
@@ -165,12 +176,8 @@ class _ZukanCardState extends State<ZukanCard> {
           setState(() {
             _displayedHint = hint;
           });
-        } else if (widget.item.isDiscovered) {
-          // 発見済みの場合、詳細情報を取得して詳細ページへ遷移
-          final details = await _fetchDetails(widget.item.id);
-          _showDetailsPage(context, details);
         } else if (!widget.item.isDiscovered && _displayedHint != null) {
-          // 未発見でヒント表示中の場合、何もしないか、あるいはヒントを再度非表示にするなどの処理
+          // 未発見でヒント表示中の場合、何もしない（あるいはヒントを再度非表示にするなどの処理）
           // 今回はシンプルに何もしない
         }
       },
@@ -204,7 +211,15 @@ class _ZukanCardState extends State<ZukanCard> {
                 borderRadius: BorderRadius.circular(10.0),
               ),
               child:
-                  widget.item.isDiscovered
+                  showCallToAction
+                      ? ClipRRect(
+                        borderRadius: BorderRadius.circular(10.0),
+                        child: Image.asset(
+                          'images/camera_placeholder.png', // カメラアイコンや特別な画像を配置
+                          fit: BoxFit.cover,
+                        ),
+                      )
+                      : widget.item.isDiscovered
                       ? ClipRRect(
                         borderRadius: BorderRadius.circular(10.0),
                         child: Image.asset(
@@ -235,34 +250,40 @@ class _ZukanCardState extends State<ZukanCard> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    widget.item.isDiscovered
+                    showCallToAction
+                        ? '撮影して図鑑に登録しよう！'
+                        : widget.item.isDiscovered
                         ? widget.item.name
                         : (_displayedHint ?? '??????'), // ヒント表示中か未発見か
                     style: TextStyle(
-                      fontSize: 18,
+                      fontSize: showCallToAction ? 16 : 18, // テキストサイズを調整
                       fontWeight: FontWeight.bold,
                       color:
-                          widget.item.isDiscovered || _displayedHint != null
+                          showCallToAction
+                              ? AppColors
+                                  .blue // 目を引く色に
+                              : widget.item.isDiscovered ||
+                                  _displayedHint != null
                               ? Colors.black87
                               : Colors.grey[700],
                     ),
                   ),
                   const SizedBox(height: 5.0),
-                  Text(
-                    widget.item.isDiscovered
-                        ? '発見日: ${widget.item.discoveredDate}'
-                        : (_displayedHint == null
-                            ? 'タップしてヒントを見る'
-                            : ''), // ヒント表示中の場合は空文字
-                    style: TextStyle(
-                      fontSize: 14,
-                      color:
-                          widget.item.isDiscovered
-                              ? Colors.black54
-                              : Colors.grey[600],
+                  if (!showCallToAction) // 「撮影して図鑑に登録しよう」の場合は表示しない
+                    Text(
+                      widget.item.isDiscovered
+                          ? '発見日: ${widget.item.discoveredDate}'
+                          : (_displayedHint == null
+                              ? 'タップしてヒントを見る'
+                              : ''), // ヒント表示中の場合は空文字
+                      style: TextStyle(
+                        fontSize: 14,
+                        color:
+                            widget.item.isDiscovered
+                                ? Colors.black54
+                                : Colors.grey[600],
+                      ),
                     ),
-                  ),
-
                   if (!widget.item.isDiscovered &&
                       _displayedHint == 'ヒントを取得中...')
                     const Padding(

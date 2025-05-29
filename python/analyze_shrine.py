@@ -27,7 +27,7 @@ def analyze_shrine(image, latitude, longitude):
     try:
         result = gmaps.places_nearby(
             location=location,
-            radius=2000,
+            radius=50,
             type='point_of_interest',
             keyword='神社',
             language='ja'

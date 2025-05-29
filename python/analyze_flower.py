@@ -4,7 +4,7 @@ import requests
 from io import BytesIO
 import deepl
 
-PLANT_ID_API_KEY = 'SVC2GepJUfDIuMTYW8u8nZvccMpCUEZ3xPZPLjWcpLFZ5KfLTS'
+PLANT_ID_API_KEY = '4FQkwl4wqam7HyHygEDYLreoklMohFmjl8S5y8k8SpGHWnE4Wm'
 DEEPL_API_KEY= '222ede1e-56bc-4131-a900-4dc437e2efdb:fx'  # DeepL APIキーを指定してください
 
 

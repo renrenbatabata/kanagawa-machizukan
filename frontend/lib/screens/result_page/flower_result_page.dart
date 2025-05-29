@@ -168,18 +168,19 @@ class FlowerResultPage extends StatelessWidget {
                                   children: [
                                     Text(
                                       "分類 : $family $genius",
-                                      style: const TextStyle(fontSize: 16),
+                                      style: const TextStyle(fontSize: 20),
                                     ),
                                     const SizedBox(height: 8),
                                     // meaningがnullでなければ表示
                                     if (meaning != null)
                                       Text(
                                         "花言葉 :$meaning",
-                                        style: const TextStyle(fontSize: 16),
+                                        style: const TextStyle(fontSize: 20),
                                       ),
+                                    const SizedBox(height: 10),
                                     Text(
                                       description,
-                                      style: const TextStyle(fontSize: 16),
+                                      style: const TextStyle(fontSize: 20),
                                     ),
                                   ],
                                 ),

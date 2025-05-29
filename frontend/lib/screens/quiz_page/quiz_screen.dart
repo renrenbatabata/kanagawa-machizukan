@@ -154,7 +154,7 @@ class _QuizScreenState extends State<QuizScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 30),
+                  const SizedBox(height: 10),
 
                   // 選択肢
                   ...List.generate(currentQuestion.options.length, (index) {
@@ -274,7 +274,7 @@ class _QuizScreenState extends State<QuizScreen> {
                   if (_isAnswerChecked)
                     Column(
                       children: [
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 10),
                         Container(
                           padding: const EdgeInsets.all(15),
                           decoration: BoxDecoration(
@@ -315,7 +315,7 @@ class _QuizScreenState extends State<QuizScreen> {
                                           : AppColors.wrongAnswerRed,
                                 ),
                               ),
-                              const SizedBox(height: 10),
+                              const SizedBox(height: 5),
                               Text(
                                 currentQuestion.explanation,
                                 style: const TextStyle(

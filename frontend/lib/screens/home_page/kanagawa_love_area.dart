@@ -93,7 +93,12 @@ class KanagawaLoveArea extends StatelessWidget {
         boxShadow: [
           // 影
           BoxShadow(
-            color: Colors.black.withOpacity(0.18), // 影の色と透明度を調整
+            color: const Color.fromARGB(
+              255,
+              26,
+              25,
+              25,
+            ).withOpacity(0.18), // 影の色と透明度を調整
             blurRadius: 10, // 影のぼかし具合
             offset: const Offset(0, 5), // 影のオフセット
           ),
@@ -103,7 +108,7 @@ class KanagawaLoveArea extends StatelessWidget {
       child: Column(
         children: [
           Text(
-            'きみの かなわがく らぶど💕',
+            'きみの ずかん たっせいど🏆',
             style: const TextStyle(
               fontSize: 28, // 文字サイズを大きく
               fontWeight: FontWeight.w900, // さらに太く
