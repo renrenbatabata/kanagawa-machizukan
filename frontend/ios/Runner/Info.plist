@@ -4,6 +4,12 @@
 <dict>
 <key>NSCameraUsageDescription</key>
 <string>このアプリではカメラを使用します</string>
+<key>NSLocationWhenInUseUsageDescription</key>
+<string>現在地から住所情報を取得するために位置情報を使用します。</string>
+<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+<string>バックグラウンドでも住所情報を取得するために位置情報を使用します。</string>
+<key>NSLocationAlwaysUsageDescription</key>
+<string>バックグラウンドでも住所情報を取得するために位置情報を使用します。</string>
 <key>GADApplicationIdentifier</key>
 <string>ca-app-pub-6239294157813573~7411698496</string>
 	<key>CFBundleDevelopmentRegion</key>

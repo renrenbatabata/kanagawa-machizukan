@@ -8,22 +8,29 @@ import 'package:frontend/widgets/control.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart'; // ★追加：geocodingパッケージをインポート
 
 Future<Map<String, dynamic>?> uploadImageToPythonServer(
   File imageFile,
   String category,
   Position position,
+  String? address, // ★追加：住所情報を引数として受け取る
 ) async {
-  final uri = Uri.parse('http://10.17.8.230:8080/analyze');
+  final uri = Uri.parse('http://10.17.9.12:5000/analyze');
 
   final request = http.MultipartRequest('POST', uri);
   request.files.add(await http.MultipartFile.fromPath('image', imageFile.path));
   request.fields['category'] = category;
   request.fields['userId'] = "215";
 
-  // // 位置情報を送信フィールドに追加
+  // 位置情報を送信フィールドに追加
   request.fields['latitude'] = position.latitude.toString(); //緯度
   request.fields['longitude'] = position.longitude.toString(); //経度
+
+  // ★追加：住所情報を送信フィールドに追加
+  if (address != null && address.isNotEmpty) {
+    request.fields['address'] = address;
+  }
 
   try {
     final response = await request.send();
@@ -35,6 +42,9 @@ Future<Map<String, dynamic>?> uploadImageToPythonServer(
       return result;
     } else {
       print('❌ サーバーエラー: ${response.statusCode}');
+      // エラーレスポンスボディも確認するとデバッグに役立ちます
+      final errorBody = await response.stream.bytesToString();
+      print('エラーレスポンスボディ: $errorBody');
     }
   } catch (e) {
     print('❌ 通信エラー: $e');
@@ -54,6 +64,7 @@ class PicturePreviewScreen extends StatelessWidget {
     required this.category,
     required this.position,
   });
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -132,10 +143,35 @@ class PicturePreviewScreen extends StatelessWidget {
                   onPressed: () async {
                     final file = File(imagePath);
 
+                    // ★追加：ジオコーディングで住所を取得
+                    String? detectedAddress;
+                    try {
+                      List<Placemark> placemarks =
+                          await placemarkFromCoordinates(
+                            position.latitude,
+                            position.longitude,
+                            localeIdentifier: "ja_JP", // 日本語の住所を取得
+                          );
+                      if (placemarks.isNotEmpty) {
+                        final p = placemarks.first;
+                        // 都道府県、市区町村、番地などを結合して表示
+                        detectedAddress =
+                            "${p.administrativeArea ?? ''}"
+                            "${p.locality ?? ''}"
+                            "${p.thoroughfare ?? ''}"
+                            "${p.subThoroughfare ?? ''}";
+                        print('取得した住所: $detectedAddress');
+                      }
+                    } catch (e) {
+                      print('住所の取得に失敗しました: $e');
+                      detectedAddress = null; // 失敗した場合はnullにする
+                    }
+
                     final result = await uploadImageToPythonServer(
                       file,
                       category,
                       position,
+                      detectedAddress, // ★追加：取得した住所をサーバーに送信
                     );
 
                     if (result != null) {
@@ -144,8 +180,13 @@ class PicturePreviewScreen extends StatelessWidget {
                         final name = result['name_jp'] ?? 'Unknown'; //名前
                         final family = result['family'] ?? 'Unknown'; //科
                         final genius = result['genius'] ?? "Unlnown"; //〇目
-                        final meaning = result['meaning'] ?? "Unlnown"; //花言葉
+                        final meaning = result['meaning']; //花言葉 (null許容)
                         final description = result['description'];
+                        // サーバーからの結果に場所の名前が含まれると仮定、または取得した住所を利用
+                        final location =
+                            result['location_name'] ??
+                            detectedAddress ??
+                            '不明な場所';
 
                         Navigator.push(
                           context,
@@ -158,6 +199,7 @@ class PicturePreviewScreen extends StatelessWidget {
                                   genius: genius,
                                   meaning: meaning,
                                   description: description,
+                                  location: location,
                                 ),
                           ),
                         );
@@ -228,7 +270,7 @@ class PicturePreviewScreen extends StatelessWidget {
                     style: TextStyle(fontSize: 30, color: Colors.white),
                   ),
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
               ],
             ),
           ),

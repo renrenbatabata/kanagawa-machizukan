@@ -12,6 +12,7 @@ class FlowerResultPage extends StatelessWidget {
   final String genius;
   final String? meaning;
   final String description;
+  final String? location; // ★変更：null許容にしました
 
   const FlowerResultPage({
     super.key,
@@ -19,8 +20,9 @@ class FlowerResultPage extends StatelessWidget {
     required this.name, //名前
     required this.family, //科
     required this.genius, //目
-    required this.meaning, //花言葉
+    this.meaning, //花言葉 - requiredを外し、null許容にしました
     required this.description, //説明
+    this.location, // ★変更：requiredを外し、null許容にしました
   });
 
   @override
@@ -50,8 +52,9 @@ class FlowerResultPage extends StatelessWidget {
                           width: double.infinity,
                           margin: const EdgeInsets.symmetric(horizontal: 16),
                           padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFFF6E5),
+                          decoration: const BoxDecoration(
+                            // constを追加
+                            color: Color(0xFFFFF6E5),
                           ),
                           child: Text(
                             name,
@@ -85,6 +88,7 @@ class FlowerResultPage extends StatelessWidget {
 
                         const SizedBox(height: 8),
                         Text(today, style: const TextStyle(fontSize: 16)),
+
                         const SizedBox(height: 16),
 
                         // しゃしんをほぞんするボタン
@@ -172,7 +176,7 @@ class FlowerResultPage extends StatelessWidget {
                                     ),
                                     const SizedBox(height: 8),
                                     // meaningがnullでなければ表示
-                                    if (meaning != null)
+                                    if (meaning != null && meaning!.isNotEmpty)
                                       Text(
                                         "花言葉 :$meaning",
                                         style: const TextStyle(fontSize: 20),
@@ -182,6 +186,20 @@ class FlowerResultPage extends StatelessWidget {
                                       description,
                                       style: const TextStyle(fontSize: 20),
                                     ),
+                                    if (location != null &&
+                                        location!.isNotEmpty)
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                          top: 4.0,
+                                        ),
+                                        child: Text(
+                                          "撮影場所: $location",
+                                          style: const TextStyle(
+                                            fontSize: 16,
+                                            color: Colors.grey,
+                                          ),
+                                        ),
+                                      ),
                                   ],
                                 ),
                               ),
