@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/widgets/ad_banner.dart';
 import 'package:frontend/widgets/control.dart';
 import 'package:frontend/widgets/header.dart';
 import 'package:frontend/screens/zukan_page/zukan_card.dart'; // ZukanCardをインポート
@@ -220,7 +221,10 @@ class _ZukanState extends State<Zukan> {
               ),
             ),
           ),
-          const SizedBox(height: 10.0), // リストの下のスペースを調整
+          const SizedBox(height: 10.0),
+          const AdBanner(
+            adUnitId: 'ca-app-pub-3940256099942544/6300978111', // ホーム画面用のテストID
+          ), // リストの下のスペースを調整
         ],
       ),
       bottomNavigationBar: const Control(),
