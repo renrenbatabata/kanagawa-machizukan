@@ -63,6 +63,9 @@ class DefaultFirebaseOptions {
     messagingSenderId: '520655900028',
     projectId: 'kanagawaku-machizukan-dev',
     storageBucket: 'kanagawaku-machizukan-dev.firebasestorage.app',
+    androidClientId: '520655900028-8uamimv06uci32c44utop9sameqgtald.apps.googleusercontent.com',
+    iosClientId: '520655900028-nogk81g4o1rnrorp70a62m3h43cc3l3b.apps.googleusercontent.com',
     iosBundleId: 'com.example.frontend',
   );
+
 }

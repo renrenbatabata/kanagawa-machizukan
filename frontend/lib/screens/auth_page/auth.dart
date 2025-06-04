@@ -84,7 +84,7 @@ class _AuthScreenState extends State<AuthScreen> {
                   const SizedBox(height: 30), // ロゴとメッセージの間隔
                   // メッセージ
                   Text(
-                    'きみだけのずかんをつくろう！', // より平易で短いメッセージ
+                    'きみだけのずかんをつくろう！',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 25, // フォントサイズを調整
