@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart'; // Firebase Authenticationをインポート
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:frontend/screens/auth_page/auth.dart';
-import 'package:frontend/screens/home_page/home_page.dart'; // AuthScreenをインポート
+import 'package:frontend/screens/home_page/home_page.dart';
 
 class StartPage extends StatefulWidget {
   const StartPage({super.key});
