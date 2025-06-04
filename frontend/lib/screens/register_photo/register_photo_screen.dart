@@ -8,20 +8,27 @@ import 'package:frontend/widgets/control.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:geolocator/geolocator.dart';
-import 'package:geocoding/geocoding.dart'; // ★追加：geocodingパッケージをインポート
+import 'package:geocoding/geocoding.dart';
+import 'package:frontend/screens/auth_page/auth_service.dart';
 
 Future<Map<String, dynamic>?> uploadImageToPythonServer(
   File imageFile,
   String category,
   Position position,
-  String? address, // ★追加：住所情報を引数として受け取る
+  String? address,
 ) async {
-  final uri = Uri.parse('http://10.17.9.12:5000/analyze');
+  final uri = Uri.parse('http://10.17.6.221:8080/analyze');
 
   final request = http.MultipartRequest('POST', uri);
   request.files.add(await http.MultipartFile.fromPath('image', imageFile.path));
   request.fields['category'] = category;
-  request.fields['userId'] = "215";
+
+  final String? userId = AuthService().currentUserId;
+  if (userId != null) {
+    request.fields['userId'] = userId;
+  } else {
+    print('警告: userIdがnullです。ログイン状態を確認してください。');
+  }
 
   // 位置情報を送信フィールドに追加
   request.fields['latitude'] = position.latitude.toString(); //緯度
@@ -143,7 +150,23 @@ class PicturePreviewScreen extends StatelessWidget {
                   onPressed: () async {
                     final file = File(imagePath);
 
-                    // ★追加：ジオコーディングで住所を取得
+                    // ★変更：AuthServiceからユーザーIDを取得。
+                    final String? userId = AuthService().currentUserId;
+
+                    // ここでのログインチェックは不要
+                    if (userId == null) {
+                      print('エラー: ユーザーIDが取得できませんでした。');
+                      showDialog(
+                        context: context,
+                        builder:
+                            (_) => const AlertDialog(
+                              title: Text("エラー"),
+                              content: Text("登録にはログインが必要です。"),
+                            ),
+                      );
+                      return;
+                    }
+                    // ジオコーディングで住所を取得
                     String? detectedAddress;
                     try {
                       List<Placemark> placemarks =
@@ -171,7 +194,7 @@ class PicturePreviewScreen extends StatelessWidget {
                       file,
                       category,
                       position,
-                      detectedAddress, // ★追加：取得した住所をサーバーに送信
+                      detectedAddress,
                     );
 
                     if (result != null) {
@@ -266,7 +289,7 @@ class PicturePreviewScreen extends StatelessWidget {
 
                   icon: const Icon(Icons.edit, color: Colors.white, size: 30),
                   label: const Text(
-                    "とうろく",
+                    "かいせき",
                     style: TextStyle(fontSize: 30, color: Colors.white),
                   ),
                 ),

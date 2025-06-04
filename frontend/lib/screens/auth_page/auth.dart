@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:frontend/widgets/colors.dart'; // 色の定義
-import 'package:frontend/screens/home_page/home_page.dart'; // HomePageをインポート
+import 'package:frontend/screens/home_page/home_page.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
