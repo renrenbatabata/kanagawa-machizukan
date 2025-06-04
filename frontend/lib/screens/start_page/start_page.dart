@@ -1,9 +1,7 @@
-// lib/screens/start_page/start_page.dart
-
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart'; // Firebase Authenticationをインポート
-import 'package:frontend/screens/auth_screen/auth_screen.dart'; // AuthScreenをインポート
-import 'package:frontend/screens/home_page/home_page.dart'; // HomePageをインポート
+import 'package:frontend/screens/auth_page/auth.dart';
+import 'package:frontend/screens/home_page/home_page.dart'; // AuthScreenをインポート
 
 class StartPage extends StatefulWidget {
   const StartPage({super.key});
@@ -21,14 +19,8 @@ class _StartPageState extends State<StartPage> with TickerProviderStateMixin {
   void initState() {
     super.initState();
 
-    // アニメーション設定前にログイン状態をチェック
-    // ウィジェットツリーが完全に構築される前に遷移を試みるため、
-    // addPostFrameCallback を使用して、描画フレームの後に実行させる
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _checkLoginStatusAndNavigate();
-    });
-
-    // === ロゴアニメーションの設定 ===
+    // ★★★ 変更点: ここでログイン状態の自動チェックと遷移を行わない ★★★
+    // アニメーションを必ず開始させる
     _logoController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1500), // アニメーションの長さ
@@ -48,25 +40,8 @@ class _StartPageState extends State<StartPage> with TickerProviderStateMixin {
       ),
     );
 
-    // ログインチェック後、未ログインの場合のみアニメーションを開始
-    // _checkLoginStatusAndNavigate()の中で_logoController.forward()を呼び出す
-  }
-
-  // ログイン状態をチェックし、適切な画面へ遷移する関数
-  void _checkLoginStatusAndNavigate() {
-    final user = FirebaseAuth.instance.currentUser; // 現在のユーザーを取得
-
-    if (user != null) {
-      // ユーザーが既にログインしている場合
-      // アニメーションを待たずに直接HomePageへ遷移
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const HomePage()),
-      );
-    } else {
-      // ユーザーがログインしていない場合
-      // アニメーションを開始し、StartPageを表示
-      _logoController.forward();
-    }
+    // アニメーションを開始。完了後に特別な処理は今はなし。
+    _logoController.forward();
   }
 
   @override
@@ -133,14 +108,25 @@ class _StartPageState extends State<StartPage> with TickerProviderStateMixin {
                       ).withAlpha((0.1 * 255).toInt()),
                     ),
                     onPressed: () {
-                      // 「はじめる」ボタンが押されたらAuthScreenへ遷移
-                      Navigator.pushReplacement(
-                        // ★pushReplacementに変更
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const AuthScreen(),
-                        ),
-                      );
+                      // ★★★ ここが修正点: 「はじめる」ボタンの遷移ロジック ★★★
+                      final user = FirebaseAuth.instance.currentUser;
+                      if (user != null) {
+                        // ログイン済みの場合、HomePageへ遷移
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const HomePage(),
+                          ),
+                        );
+                      } else {
+                        // 未ログインの場合、AuthScreenへ遷移
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const AuthScreen(),
+                          ),
+                        );
+                      }
                     },
                     child: const Text(
                       "はじめる",

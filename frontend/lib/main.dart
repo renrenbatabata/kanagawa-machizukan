@@ -10,7 +10,6 @@ void main() async {
     // Firebase初期化
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  WidgetsFlutterBinding.ensureInitialized();
   MobileAds.instance.initialize();
   runApp(const MyApp());
 }

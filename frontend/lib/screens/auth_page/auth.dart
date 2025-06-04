@@ -18,6 +18,8 @@ class _AuthScreenState extends State<AuthScreen> {
 
   Future<UserCredential?> _signInWithGoogle() async {
     try {
+      await _googleSignIn.signOut(); // または _googleSignIn.disconnect(); でもOK
+
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser == null) {
         return null; // ユーザーがサインインをキャンセル

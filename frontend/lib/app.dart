@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/screens/auth_page/auth.dart';
 import 'screens/select_target/select_target_screen.dart';
 import 'screens/start_page/start_page.dart';
 import 'screens/home_page/home_page.dart';
@@ -24,6 +25,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/start_page': (context) => const StartPage(),
         '/home_page': (context) => const HomePage(),
+        '/auth_screen': (context) => const AuthScreen(),
         '/select_target': (context) => const SelectTargetScreen(),
         '/camera': (context) => const SelectTargetScreen(),
         '/zukan_page': (context) => const Zukan(),
