@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:frontend/screens/result_page/result_actions.dart';
 import 'package:intl/intl.dart';
 import 'package:frontend/widgets/header.dart';
 import 'package:frontend/widgets/control.dart';
@@ -12,7 +13,9 @@ class FlowerResultPage extends StatelessWidget {
   final String genius;
   final String? meaning;
   final String description;
-  final String? location; // ★変更：null許容にしました
+  final String? location;
+  final Map<String, dynamic> originalResultData;
+  final String category;
 
   const FlowerResultPage({
     super.key,
@@ -20,9 +23,11 @@ class FlowerResultPage extends StatelessWidget {
     required this.name, //名前
     required this.family, //科
     required this.genius, //目
-    this.meaning, //花言葉 - requiredを外し、null許容にしました
+    this.meaning, //花言葉
     required this.description, //説明
-    this.location, // ★変更：requiredを外し、null許容にしました
+    this.location,
+    required this.originalResultData,
+    required this.category,
   });
 
   @override
@@ -205,6 +210,12 @@ class FlowerResultPage extends StatelessWidget {
                               ),
                             ],
                           ),
+                        ),
+                        // ★変更：ResultActionsウィジェットをここに配置
+                        ResultActions(
+                          resultData: originalResultData, // 元の解析結果データを渡す
+                          imagePath: imagePath,
+                          category: 'flower', // カテゴリを指定
                         ),
                         const SizedBox(height: 80),
                       ],

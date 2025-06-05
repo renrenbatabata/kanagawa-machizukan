@@ -126,7 +126,7 @@ class PicturePreviewScreen extends StatelessWidget {
             ),
           ),
 
-          // 登録エリア
+          // かいせきボタン
           Container(
             padding: const EdgeInsets.symmetric(vertical: 20.0),
             child: Column(
@@ -150,7 +150,7 @@ class PicturePreviewScreen extends StatelessWidget {
                   onPressed: () async {
                     final file = File(imagePath);
 
-                    // ★変更：AuthServiceからユーザーIDを取得。
+                    // AuthServiceからユーザーIDを取得。
                     final String? userId = AuthService().currentUserId;
 
                     // ここでのログインチェックは不要
@@ -223,6 +223,8 @@ class PicturePreviewScreen extends StatelessWidget {
                                   meaning: meaning,
                                   description: description,
                                   location: location,
+                                  originalResultData: result, // ★追加: 解析結果全体を渡す
+                                  category: category,
                                 ),
                           ),
                         );
@@ -287,7 +289,11 @@ class PicturePreviewScreen extends StatelessWidget {
                     }
                   },
 
-                  icon: const Icon(Icons.edit, color: Colors.white, size: 30),
+                  icon: const Icon(
+                    Icons.analytics,
+                    color: Colors.white,
+                    size: 30,
+                  ),
                   label: const Text(
                     "かいせき",
                     style: TextStyle(fontSize: 30, color: Colors.white),

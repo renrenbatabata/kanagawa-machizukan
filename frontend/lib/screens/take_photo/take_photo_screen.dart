@@ -1,6 +1,6 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'package:frontend/screens/register_photo/register_photo_screen.dart';
+import 'package:frontend/screens/analysis_page/analysis.dart';
 import 'package:frontend/widgets/back_button.dart';
 import 'package:frontend/widgets/speech_bubble.dart';
 import 'package:geolocator/geolocator.dart';
@@ -196,12 +196,7 @@ class _TakePhotoScreenState extends State<TakePhotoScreen> {
                 ),
 
                 // 戻るボタン
-                Positioned(
-                  top: 40,
-                  right: 20,
-
-                  child: CustomBackButton(), // ここで追加
-                ),
+                Positioned(top: 40, right: 20, child: CustomBackButton()),
               ],
             );
           } else {
