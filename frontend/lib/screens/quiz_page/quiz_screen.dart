@@ -117,7 +117,7 @@ class _QuizScreenState extends State<QuizScreen> {
     });
 
     // 解説表示後、少し遅延させてから次の問題へ自動で進む (または手動ボタン)
-    Future.delayed(const Duration(seconds: 2), () {
+    Future.delayed(const Duration(seconds: 60), () {
       // 2秒後に自動で次へ
       if (!mounted) return; // ウィジェットがツリーに存在しない場合は何もしない
 

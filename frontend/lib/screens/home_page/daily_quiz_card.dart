@@ -39,7 +39,7 @@ class _DailyQuizCardState extends State<DailyQuizCard> {
     });
 
     final url = Uri.parse(
-      'http://10.17.6.221:8080/api/quizzes',
+      'http://192.168.3.171:8080/quiz',
     ); // ★★★ JavaバックエンドのクイズAPIエンドポイント ★★★
 
     try {

@@ -18,7 +18,7 @@ class ZukanItem {
     this.discoveredDate,
     required this.isDiscovered,
     this.hint,
-    required this.category, // ★追加：コンストラクタで必須に
+    required this.category,
   });
 
   factory ZukanItem.fromJson(Map<String, dynamic> json) {
