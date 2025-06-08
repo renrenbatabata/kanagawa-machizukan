@@ -35,5 +35,5 @@ public class ImageDetailEntity {
 
     // ユーザーIDを追加
     @Column(name = "user_id")
-    private Integer userId;
+    private String userId;
 }

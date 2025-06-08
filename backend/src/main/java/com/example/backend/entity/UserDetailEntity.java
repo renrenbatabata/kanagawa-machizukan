@@ -8,5 +8,5 @@ import lombok.Data;
 @Table(name = "user_details")
 public class UserDetailEntity {
     @Id
-    private Integer userId;
+    private String userId;
 }

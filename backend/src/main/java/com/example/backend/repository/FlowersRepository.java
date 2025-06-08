@@ -15,4 +15,7 @@ public interface FlowersRepository extends JpaRepository<FlowersInfoEntity, Stri
 
     @Query("SELECT f FROM FlowersInfoEntity f WHERE f.name_en = :name")
     Optional<FlowersInfoEntity> findByNameEn(@Param("name") String name);
+
+    @Query("SELECT f FROM FlowersInfoEntity f WHERE f.name_jp = :name")
+    List<FlowersInfoEntity> findByName(@Param("name") String name);
 }

@@ -17,7 +17,6 @@ public class LogService {
         System.out.println("Description:" + dto.getDescription());
         System.out.println("taxonomy:" + dto.getTaxonomy());
     }
-
     public void infoLog(FlowersInfoDto info) {
         System.out.println("name_jp:" + info.getName_jp());
         System.out.println("name_en:" + info.getName_en());
@@ -31,11 +30,20 @@ public class LogService {
             System.out.println("=============================================");
             System.out.println("Name:" + imageDetailDto.getName());
             System.out.println("Category:" + imageDetailDto.getCategory());
-            System.out.println("ShootingDate:" + imageDetailDto.getShootingDate());
+            //System.out.println("ShootingDate:" + imageDetailDto.getShootingDate());
             System.out.println("ShootingLocation:" + imageDetailDto.getShootingLocation());
            // System.out.println("ImageData:" + Arrays.toString(imageDetailDto.getImageData()));
         }
     }
+    public void imageDetailLog(ImageDetailDto dto){
+            System.out.println("=============================================");
+            System.out.println("Name:" + dto.getName());
+            System.out.println("Category:" + dto.getCategory());
+            //System.out.println("ShootingDate:" + dto.getShootingDate());
+            System.out.println("ShootingLocation:" + dto.getShootingLocation());
+
+    }
+
     public void shrineLog(ShrineInfoDto info){
         System.out.println("name:" + info.getName());
         System.out.println("hiragana:" + info.getHiragana());

@@ -9,8 +9,8 @@ import java.util.List;
 @Repository
 public interface ImageDetailRepository extends JpaRepository<ImageDetailEntity, Integer> {
 
-    List<ImageDetailEntity> findByCategoryAndUserId(String category, Integer userId);
+    List<ImageDetailEntity> findByCategoryAndUserId(String category, String userId);
 
-    List<ImageDetailEntity> findByCategoryAndUserIdAndName(String category, Integer userId, String name);
+    List<ImageDetailEntity> findByCategoryAndUserIdAndName(String category, String userId, String name);
 
 }

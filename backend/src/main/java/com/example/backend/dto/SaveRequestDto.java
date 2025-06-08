@@ -8,6 +8,6 @@ public class SaveRequestDto {
     private AnalyzeResponseDto analyzeResponseDto;
     private ShrineAnalyzeResponceDto shrineAnalyzeResponceDto;
     private String category;
-    private Integer userId;
+    private String userId;
     private MultipartFile file;
 }

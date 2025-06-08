@@ -24,7 +24,9 @@ public class WebSecurityConfig {
                                 "/filter-error",
                                 "/api/hello",
                                 "/analyze",
-                                "/allPictures"
+                                "/allPictures",
+                                "/quiz",
+                                "/pictures/{id}"
                         ).permitAll()
                         .anyRequest().authenticated()
                 );
