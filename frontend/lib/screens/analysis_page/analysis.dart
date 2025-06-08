@@ -6,7 +6,7 @@ import 'package:frontend/widgets/header.dart';
 import 'package:frontend/widgets/speech_bubble.dart';
 import 'package:frontend/widgets/control.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'dart:convert'; //jsonデコード
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:frontend/screens/auth_page/auth_service.dart';
@@ -16,8 +16,9 @@ Future<Map<String, dynamic>?> uploadImageToPythonServer(
   String category,
   Position position,
   String? address,
+  String userId,
 ) async {
-  final uri = Uri.parse('http://10.17.6.221:8080/analyze');
+  final uri = Uri.parse('http://192.168.3.171:8080/analyze');
 
   final request = http.MultipartRequest('POST', uri);
   request.files.add(await http.MultipartFile.fromPath('image', imageFile.path));
@@ -195,16 +196,24 @@ class PicturePreviewScreen extends StatelessWidget {
                       category,
                       position,
                       detectedAddress,
+                      userId,
                     );
 
                     if (result != null) {
+                      final uuid = result['uuid'];
+
                       if (category == 'flower') {
                         // 花向けのデータを受け取る処理
-                        final name = result['name_jp'] ?? 'Unknown'; //名前
-                        final family = result['family'] ?? 'Unknown'; //科
-                        final genius = result['genius'] ?? "Unlnown"; //〇目
-                        final meaning = result['meaning']; //花言葉 (null許容)
-                        final description = result['description'];
+                        print(result['flowersInfo']);
+
+                        final flowersInfo = result['flowersInfo'];
+                        final name = flowersInfo['name_jp'] ?? 'Unknown'; //名前
+                        final family = flowersInfo['family'] ?? 'Unknown'; //科
+                        final genius = flowersInfo['genius'] ?? "Unlnown"; //〇目
+                        final meaning = flowersInfo['meaning']; //花言葉 (null許容)
+                        final description =
+                            flowersInfo['description'] ??
+                            'くわしい情報は見つかりませんでした'; //説明
                         // サーバーからの結果に場所の名前が含まれると仮定、または取得した住所を利用
                         final location =
                             result['location_name'] ??
@@ -223,8 +232,9 @@ class PicturePreviewScreen extends StatelessWidget {
                                   meaning: meaning,
                                   description: description,
                                   location: location,
-                                  originalResultData: result, // ★追加: 解析結果全体を渡す
+                                  // originalResultData: result,
                                   category: category,
+                                  uuid: uuid,
                                 ),
                           ),
                         );
@@ -263,6 +273,9 @@ class PicturePreviewScreen extends StatelessWidget {
                                   name: name,
                                   hiraganaName: hiraganaName,
                                   description: description,
+                                  originalResultData: result,
+                                  category: category,
+                                  uuid: uuid,
                                 ),
                           ),
                         );

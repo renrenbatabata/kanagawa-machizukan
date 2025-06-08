@@ -1,8 +1,12 @@
 // lib/widgets/daily_quiz_card.dart
+
 import 'package:flutter/material.dart';
-import 'package:frontend/screens/quiz_page/quiz_data.dart'; // quizQuestionsをインポート
+import 'package:frontend/screens/quiz_page/quiz_data.dart'; // QuizQuestionモデルをインポート
 import 'package:frontend/widgets/colors.dart'; // AppColorsとColorExtensionをインポート
 import 'package:frontend/screens/quiz_page/quiz_screen.dart'; // QuizScreenをインポート
+import 'dart:math'; // Randomクラスを使用するためにインポート
+import 'package:http/http.dart' as http; // HTTPリクエスト用
+import 'dart:convert'; // JSONデコード用
 
 // ホーム画面に表示する簡易クイズカード
 class DailyQuizCard extends StatefulWidget {
@@ -13,45 +17,166 @@ class DailyQuizCard extends StatefulWidget {
 }
 
 class _DailyQuizCardState extends State<DailyQuizCard> {
-  late QuizQuestion _dailyQuestion; // late修飾子を追加
+  // ★★★ 修正点: データの状態管理変数 ★★★
+  QuizQuestion? _dailyQuestion; // その日のクイズ問題（Nullableにする）
+  bool _isLoading = true; // データのロード中かどうかのフラグ
+  String? _errorMessage; // エラーメッセージ
+
   int? _selectedOptionIndex; // 選択された選択肢のインデックス
   bool _isAnswerChecked = false; // 回答がチェックされたかどうかのフラグ
 
   @override
   void initState() {
     super.initState();
-    _setDailyQuestion(); // 日替わり問題をセットする関数を呼び出す
+    _fetchAndSetDailyQuiz(); // 画面が初期化されるときにその日のクイズを生成
   }
 
-  // 日替わり問題をセットする関数
-  void _setDailyQuestion() {
-    final now = DateTime.now();
-    // 今日の日付 (年、月、日) を使って、その年が始まってからの通算日数を計算
-    // 例: 1月1日なら1、1月2日なら2、など
-    // これを問題リストのインデックスとして利用します
-    final dayOfYear = now.difference(DateTime(now.year, 1, 1)).inDays + 1;
-
-    // quizQuestionsリストの長さで割った余りをインデックスとして使うことで、
-    // 問題リストの範囲内で問題を循環させます。
-    // インデックスは0から始まるため、-1と+1で調整します。
-    final questionIndex = (dayOfYear - 1) % quizQuestions.length;
-
+  // ★★★ 追加: バックエンドからクイズ問題を取得し、日替わりクイズをセットする関数 ★★★
+  Future<void> _fetchAndSetDailyQuiz() async {
     setState(() {
-      _dailyQuestion = quizQuestions[questionIndex];
-      _selectedOptionIndex = null; // 新しい問題がセットされたら選択肢をリセット
-      _isAnswerChecked = false; // 回答済みフラグをリセット
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    final url = Uri.parse(
+      'http://10.17.6.221:8080/api/quizzes',
+    ); // ★★★ JavaバックエンドのクイズAPIエンドポイント ★★★
+
+    try {
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final List<dynamic> jsonList = jsonDecode(response.body);
+        if (jsonList.isEmpty) {
+          _errorMessage = 'クイズ問題がありません。';
+          _dailyQuestion = null;
+          return;
+        }
+        final List<QuizQuestion> allQuizQuestions =
+            jsonList.map((json) => QuizQuestion.fromJson(json)).toList();
+
+        // その日のクイズ問題を生成
+        final int todaySeed =
+            DateTime.now().day +
+            DateTime.now().month * 100 +
+            DateTime.now().year * 10000;
+        final Random random = Random(todaySeed);
+
+        // allQuizQuestionsをシャッフル
+        final List<QuizQuestion> shuffledQuestions = List.from(
+          allQuizQuestions,
+        );
+        shuffledQuestions.shuffle(random);
+
+        // その日の問題を選ぶ（1問だけ）
+        _dailyQuestion = shuffledQuestions.first;
+      } else {
+        _errorMessage = 'クイズの取得に失敗しました: ${response.statusCode}';
+        debugPrint('DailyQuizCard APIエラー: ${response.body}');
+        _dailyQuestion = null;
+      }
+    } catch (e) {
+      _errorMessage = 'ネットワークエラー: $e';
+      debugPrint('DailyQuizCard 通信エラー: $e');
+      _dailyQuestion = null;
+    } finally {
+      setState(() {
+        _isLoading = false;
+        _selectedOptionIndex = null; // 新しい問題がセットされたら選択肢をリセット
+        _isAnswerChecked = false; // 回答済みフラグをリセット
+      });
+    }
+  }
+
+  // 回答をチェックする関数 (変更なし)
+  void _checkAnswer() {
+    setState(() {
+      _isAnswerChecked = true;
+      // ここでラブ度やスコアの更新ロジックを追加できます
+      // 例: if (_selectedOptionIndex == _dailyQuestion?.correctOptionIndex) { ラブ度アップの処理 }
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return Container(
+        width: double.infinity,
+        margin: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(15),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.3),
+              spreadRadius: 2,
+              blurRadius: 5,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (_errorMessage != null || _dailyQuestion == null) {
+      return Container(
+        width: double.infinity,
+        margin: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(15),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.3),
+              spreadRadius: 2,
+              blurRadius: 5,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            const Icon(
+              Icons.sentiment_dissatisfied,
+              color: Colors.grey,
+              size: 40,
+            ),
+            const SizedBox(height: 10),
+            Text(
+              _errorMessage ?? '今日のクイズは表示できませんでした。\n後でもう一度お試しください。',
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 16, color: Colors.black54),
+            ),
+            const SizedBox(height: 10),
+            ElevatedButton.icon(
+              onPressed: _fetchAndSetDailyQuiz,
+              icon: const Icon(Icons.refresh),
+              label: const Text('再試行'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.blue,
+                foregroundColor: Colors.white,
+                textStyle: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // クイズ表示部分
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.all(12), // 全体のパディングをさらに小さく
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: const Color.fromARGB(255, 255, 252, 245),
-        borderRadius: BorderRadius.circular(15), // 角を丸くする
+        borderRadius: BorderRadius.circular(15),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withAlpha((0.1 * 255).toInt()),
@@ -66,34 +191,31 @@ class _DailyQuizCardState extends State<DailyQuizCard> {
           const Text(
             '💡今日のかながわくクイズ',
             style: TextStyle(
-              fontSize: 22, // タイトルフォント
+              fontSize: 22,
               fontWeight: FontWeight.bold,
               color: Color.fromARGB(255, 0, 0, 0),
             ),
           ),
-          const SizedBox(height: 10), // スペースを調整
+          const SizedBox(height: 10),
           Text(
-            _dailyQuestion.questionText, // 今日の問題文
+            _dailyQuestion!.questionText, // Nullable対応
             style: const TextStyle(
-              fontSize: 16, // フォントを小さく
+              fontSize: 16,
               color: Color.fromARGB(255, 0, 0, 0),
             ),
           ),
-          const SizedBox(height: 15), // スペースを調整
+          const SizedBox(height: 15),
           // プルダウン形式の選択肢
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12.0),
             decoration: BoxDecoration(
-              color:
-                  _isAnswerChecked
-                      ? Colors.grey.shade200
-                      : Colors.white, // 回答後は背景をグレーに
+              color: _isAnswerChecked ? Colors.grey.shade200 : Colors.white,
               borderRadius: BorderRadius.circular(8),
               border: Border.all(
                 color:
                     _isAnswerChecked
                         ? (_selectedOptionIndex ==
-                                _dailyQuestion.correctOptionIndex
+                                _dailyQuestion!.correctOptionIndex
                             ? AppColors.correctAnswerGreen
                             : AppColors.wrongAnswerRed)
                         : Colors.grey.shade400,
@@ -101,27 +223,24 @@ class _DailyQuizCardState extends State<DailyQuizCard> {
               ),
             ),
             child: DropdownButtonHideUnderline(
-              // 下線非表示
               child: DropdownButton<int>(
                 value: _selectedOptionIndex,
-                isExpanded: true, // 幅いっぱいに広げる
+                isExpanded: true,
                 hint: Text(
                   _isAnswerChecked
                       ? (_selectedOptionIndex ==
-                              _dailyQuestion.correctOptionIndex
+                              _dailyQuestion!.correctOptionIndex
                           ? 'せいかい！'
                           : 'ざんねん！')
-                      : 'こたえをえらんでね！', // ヒントテキスト
+                      : 'こたえをえらんでね！',
                   style: TextStyle(
                     fontSize: 16,
                     color:
                         _isAnswerChecked
                             ? (_selectedOptionIndex ==
-                                    _dailyQuestion.correctOptionIndex
-                                ? AppColors.correctAnswerGreen
-                                    .darker() // darker()メソッドを使用
-                                : AppColors.wrongAnswerRed
-                                    .darker()) // darker()メソッドを使用
+                                    _dailyQuestion!.correctOptionIndex
+                                ? AppColors.correctAnswerGreen.darker()
+                                : AppColors.wrongAnswerRed.darker())
                             : Colors.black54,
                     fontWeight: FontWeight.bold,
                   ),
@@ -129,7 +248,7 @@ class _DailyQuizCardState extends State<DailyQuizCard> {
                 icon:
                     _isAnswerChecked
                         ? (_selectedOptionIndex ==
-                                _dailyQuestion.correctOptionIndex
+                                _dailyQuestion!.correctOptionIndex
                             ? const Icon(
                               Icons.check_circle,
                               color: AppColors.correctAnswerGreen,
@@ -138,20 +257,17 @@ class _DailyQuizCardState extends State<DailyQuizCard> {
                               Icons.cancel,
                               color: AppColors.wrongAnswerRed,
                             ))
-                        : const Icon(
-                          Icons.arrow_drop_down,
-                          color: Colors.grey,
-                        ), // 通常のアイコン
+                        : const Icon(Icons.arrow_drop_down, color: Colors.grey),
                 onChanged:
                     _isAnswerChecked
-                        ? null // 回答チェック済みの場合は無効化
+                        ? null
                         : (int? newValue) {
                           setState(() {
                             _selectedOptionIndex = newValue;
                           });
                         },
                 items:
-                    _dailyQuestion.options.asMap().entries.map((entry) {
+                    _dailyQuestion!.options.asMap().entries.map((entry) {
                       int idx = entry.key;
                       String option = entry.value;
                       return DropdownMenuItem<int>(
@@ -162,40 +278,31 @@ class _DailyQuizCardState extends State<DailyQuizCard> {
                             fontSize: 16,
                             color:
                                 _isAnswerChecked &&
-                                        idx == _dailyQuestion.correctOptionIndex
-                                    ? AppColors.correctAnswerGreen
-                                        .darker() // darker()メソッドを使用
+                                        idx ==
+                                            _dailyQuestion!.correctOptionIndex
+                                    ? AppColors.correctAnswerGreen.darker()
                                     : _isAnswerChecked &&
                                         idx == _selectedOptionIndex &&
-                                        idx != _dailyQuestion.correctOptionIndex
-                                    ? AppColors.wrongAnswerRed
-                                        .darker() // darker()メソッドを使用
+                                        idx !=
+                                            _dailyQuestion!.correctOptionIndex
+                                    ? AppColors.wrongAnswerRed.darker()
                                     : Colors.black87,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                       );
                     }).toList(),
-                dropdownColor: Colors.white, // ドロップダウンリストの背景色
+                dropdownColor: Colors.white,
               ),
             ),
           ),
           const SizedBox(height: 15),
 
-          // 回答チェックまたは解説表示
+          // 回答チェックボタンまたは解説表示
           if (!_isAnswerChecked)
             Center(
               child: ElevatedButton.icon(
-                onPressed:
-                    _selectedOptionIndex == null
-                        ? null
-                        : () {
-                          setState(() {
-                            _isAnswerChecked = true;
-                            // ここでラブ度やスコアの更新ロジックを追加できます
-                            // 例: if (_selectedOptionIndex == _dailyQuestion.correctOptionIndex) { ラブ度アップの処理 }
-                          });
-                        },
+                onPressed: _selectedOptionIndex == null ? null : _checkAnswer,
                 icon: const Icon(Icons.check_circle_outline, size: 18),
                 label: const Text('こたえをみる！'),
                 style: ElevatedButton.styleFrom(
@@ -228,14 +335,14 @@ class _DailyQuizCardState extends State<DailyQuizCard> {
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
                     color:
-                        _dailyQuestion.correctOptionIndex ==
+                        _dailyQuestion!.correctOptionIndex ==
                                 _selectedOptionIndex
                             ? AppColors.correctAnswerGreen.withOpacity(0.1)
                             : AppColors.wrongAnswerRed.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
                       color:
-                          _dailyQuestion.correctOptionIndex ==
+                          _dailyQuestion!.correctOptionIndex ==
                                   _selectedOptionIndex
                               ? AppColors.correctAnswerGreen
                               : AppColors.wrongAnswerRed,
@@ -246,15 +353,15 @@ class _DailyQuizCardState extends State<DailyQuizCard> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        _dailyQuestion.correctOptionIndex ==
+                        _dailyQuestion!.correctOptionIndex ==
                                 _selectedOptionIndex
                             ? 'せいかい！'
                             : 'ざんねん...',
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 16, // フォントサイズを調整
                           fontWeight: FontWeight.bold,
                           color:
-                              _dailyQuestion.correctOptionIndex ==
+                              _dailyQuestion!.correctOptionIndex ==
                                       _selectedOptionIndex
                                   ? AppColors.correctAnswerGreen
                                   : AppColors.wrongAnswerRed,
@@ -262,9 +369,9 @@ class _DailyQuizCardState extends State<DailyQuizCard> {
                       ),
                       const SizedBox(height: 5),
                       Text(
-                        _dailyQuestion.explanation,
+                        _dailyQuestion!.explanation,
                         style: const TextStyle(
-                          fontSize: 12,
+                          fontSize: 12, // 解説のフォントサイズを調整
                           color: Colors.black87,
                           height: 1.4,
                         ),

@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+// import 'package:frontend/screens/result_page/result_actions.dart';
 import 'package:intl/intl.dart';
 import 'package:frontend/widgets/header.dart';
 import 'package:frontend/widgets/control.dart';
@@ -9,6 +10,9 @@ class ResultPage extends StatelessWidget {
   final String name;
   final String hiraganaName;
   final String description;
+  final Map<String, dynamic> originalResultData;
+  final String category;
+  final String? uuid;
 
   const ResultPage({
     super.key,
@@ -16,6 +20,9 @@ class ResultPage extends StatelessWidget {
     required this.name,
     required this.hiraganaName,
     required this.description,
+    required this.originalResultData,
+    required this.category,
+    this.uuid,
   });
 
   @override
@@ -164,6 +171,11 @@ class ResultPage extends StatelessWidget {
                       ],
                     ),
                   ),
+                  // ResultActions(
+                  //   resultData: originalResultData, // 元の解析結果データを渡す
+                  //   imagePath: imagePath,
+                  //   category: category, // カテゴリを指定
+                  // ),
                   const SizedBox(height: 80), // フッターの余白
                 ],
               ),
