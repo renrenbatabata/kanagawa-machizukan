@@ -30,29 +30,52 @@ class ResultActions extends StatelessWidget {
 
     final dataToSend = {
       'uuid': uuid, // UUIDをMapに入れる
-      // 必要であれば 'userId': userId, も含めることを検討
     };
-    // 送信するMapの中身を確認
+    print('送信するデータ: $dataToSend'); // 送信するMapの中身を確認
 
     try {
-      // ★★★ ここが重要！http.post を使ってJSONボディを直接送る形に戻す ★★★
       final response = await http.post(
         uri,
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(dataToSend), // MapをJSON文字列に変換して送信
       );
-      print('送信後！$dataToSend');
 
+      // ★★★ ここからが変更箇所です ★★★
       if (response.statusCode == 200) {
-        final responseBody = jsonDecode(response.body); // JSONレスポンスのデコード
-        print('✅ 図鑑に登録成功: $responseBody');
-        _showSuccessDialog(context, "図鑑に登録しました！");
+        // サーバーからのレスポンスボディを文字列として取得
+        final responseBody = response.body;
+        print('✅ サーバーレスポンスボディ: $responseBody');
+
+        // レスポンスボディが "処理完了" であるかをチェック
+        if (responseBody == "処理完了") {
+          print('✅ 図鑑に登録成功');
+          _showSuccessDialog(context, "図鑑に登録しました！");
+        } else {
+          // 200 OKだけど "処理完了" ではない場合
+          print('⚠️ 登録は成功しましたが、予期しないレスポンスボディです: $responseBody');
+          _showErrorDialog(context, "登録に成功しましたが、予期しないレスポンスがありました。");
+        }
+      } else if (response.statusCode == 400) {
+        // 400 Bad Request の場合
+        final errorBody = response.body;
+        print('❌ サーバーエラー（登録 - Bad Request）: ${response.statusCode}');
+        print('エラーレスポンスボディ: $errorBody');
+        // エラーボディが "error" であるかをチェック
+        if (errorBody == "error") {
+          _showErrorDialog(context, "登録に失敗しました。無効なリクエストです。");
+        } else {
+          _showErrorDialog(
+            context,
+            "登録に失敗しました。（エラーコード: ${response.statusCode}）",
+          );
+        }
       } else {
+        // その他のステータスコードの場合
         print('❌ サーバーエラー（登録）: ${response.statusCode}');
-        // http.post の場合は response.body でエラーボディが直接取得できる
         print('エラーレスポンスボディ: ${response.body}');
-        _showErrorDialog(context, "登録に失敗しました。もう一度お試しください。");
+        _showErrorDialog(context, "登録に失敗しました。（エラーコード: ${response.statusCode}）");
       }
+      // ★★★ ここまでが変更箇所です ★★★
     } catch (e) {
       print('❌ 通信エラー（登録）: $e');
       _showErrorDialog(context, "通信エラーが発生しました。");
