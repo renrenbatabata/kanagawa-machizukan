@@ -17,21 +17,19 @@ Future<Map<String, dynamic>?> uploadImageToPythonServer(
   String category,
   Position position,
   String? address,
-  String userId,
+  String? userId, // userIdをnull許容にする
 ) async {
   final baseUrl = dotenv.env['BASE_API_URL'];
   if (baseUrl == null) {
     print('❌ BASE_API_URLが設定されていません。');
     return null;
   }
-  // print(baseUrl);
-  final uri = Uri.parse('$baseUrl/analyze'); // APIのエンドポイント
 
+  final uri = Uri.parse('$baseUrl/analyze'); // APIのエンドポイント
   final request = http.MultipartRequest('POST', uri);
   request.files.add(await http.MultipartFile.fromPath('image', imageFile.path));
   request.fields['category'] = category;
 
-  final String? userId = AuthService().currentUserId;
   if (userId != null) {
     request.fields['userId'] = userId;
   } else {
@@ -42,7 +40,7 @@ Future<Map<String, dynamic>?> uploadImageToPythonServer(
   request.fields['latitude'] = position.latitude.toString(); //緯度
   request.fields['longitude'] = position.longitude.toString(); //経度
 
-  // ★追加：住所情報を送信フィールドに追加
+  // 住所情報を送信フィールドに追加
   if (address != null && address.isNotEmpty) {
     request.fields['address'] = address;
   }
@@ -57,7 +55,6 @@ Future<Map<String, dynamic>?> uploadImageToPythonServer(
       return result;
     } else {
       print('❌ サーバーエラー: ${response.statusCode}');
-      // エラーレスポンスボディも確認するとデバッグに役立ちます
       final errorBody = await response.stream.bytesToString();
       print('エラーレスポンスボディ: $errorBody');
     }
@@ -105,10 +102,10 @@ class PicturePreviewScreen extends StatelessWidget {
               onPressed: () {
                 Navigator.pop(context);
               },
-              child: Row(
+              child: const Row(
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
+                children: [
                   Icon(Icons.close, color: Colors.white, size: 30),
                   SizedBox(width: 2),
                   Text(
@@ -141,7 +138,7 @@ class PicturePreviewScreen extends StatelessWidget {
               children: [
                 Bubble(
                   text: 'ずかんにとうろくしてね！',
-                  textStyle: const TextStyle(fontSize: 20, color: Colors.black),
+                  textStyle: TextStyle(fontSize: 20, color: Colors.black),
                 ),
                 const SizedBox(height: 20),
                 ElevatedButton.icon(
@@ -158,11 +155,26 @@ class PicturePreviewScreen extends StatelessWidget {
                   onPressed: () async {
                     final file = File(imagePath);
 
-                    // AuthServiceからユーザーIDを取得。
+                    showDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      builder:
+                          (context) => const AlertDialog(
+                            content: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                CircularProgressIndicator(),
+                                SizedBox(height: 20),
+                                Text("かいせきちゅう..."), // 解析中メッセージ
+                              ],
+                            ),
+                          ),
+                    );
+
                     final String? userId = AuthService().currentUserId;
 
-                    // ここでのログインチェックは不要
                     if (userId == null) {
+                      Navigator.pop(context); // ローディングダイアログを閉じる
                       print('エラー: ユーザーIDが取得できませんでした。');
                       showDialog(
                         context: context,
@@ -174,7 +186,7 @@ class PicturePreviewScreen extends StatelessWidget {
                       );
                       return;
                     }
-                    // ジオコーディングで住所を取得
+
                     String? detectedAddress;
                     try {
                       List<Placemark> placemarks =
@@ -185,7 +197,6 @@ class PicturePreviewScreen extends StatelessWidget {
                           );
                       if (placemarks.isNotEmpty) {
                         final p = placemarks.first;
-                        // 都道府県、市区町村、番地などを結合して表示
                         detectedAddress =
                             "${p.administrativeArea ?? ''}"
                             "${p.locality ?? ''}"
@@ -203,25 +214,23 @@ class PicturePreviewScreen extends StatelessWidget {
                       category,
                       position,
                       detectedAddress,
-                      userId,
+                      userId, // ここで取得したuserIdを渡す
                     );
+
+                    Navigator.pop(context); // ローディングダイアログを閉じる
 
                     if (result != null) {
                       final uuid = result['uuid'];
 
                       if (category == 'flower') {
-                        // 花向けのデータを受け取る処理
                         print(result['flowersInfo']);
-
                         final flowersInfo = result['flowersInfo'];
-                        final name = flowersInfo['name_jp'] ?? 'Unknown'; //名前
-                        final family = flowersInfo['family'] ?? 'Unknown'; //科
-                        final genius = flowersInfo['genius'] ?? "Unlnown"; //〇目
-                        final meaning = flowersInfo['meaning']; //花言葉 (null許容)
+                        final name = flowersInfo['name_jp'] ?? '新発見！！';
+                        final family = flowersInfo['family'] ?? '　　　';
+                        final genius = flowersInfo['genius'] ?? "　　　";
+                        final meaning = flowersInfo['meaning'];
                         final description =
-                            flowersInfo['description'] ??
-                            'くわしい情報は見つかりませんでした'; //説明
-                        // サーバーからの結果に場所の名前が含まれると仮定、または取得した住所を利用
+                            flowersInfo['description'] ?? 'くわしい情報は見つかりませんでした';
                         final location =
                             result['location_name'] ??
                             detectedAddress ??
@@ -239,17 +248,14 @@ class PicturePreviewScreen extends StatelessWidget {
                                   meaning: meaning,
                                   description: description,
                                   location: location,
-                                  // originalResultData: result,
                                   category: category,
                                   uuid: uuid,
                                 ),
                           ),
                         );
                       } else if (category == 'shrine' || category == 'turtle') {
-                        // 神社やかめ向けの処理（仮にこういう構造だとする）
-                        final name = result['name'] ?? 'Unknown';
-                        final hiraganaName =
-                            result['hiraganaName'] ?? "Unkonown";
+                        final name = result['name'] ?? '新発見！！';
+                        final hiraganaName = result['hiraganaName'] ?? "　　　";
                         final description =
                             result['description'] ?? 'くわしい情報は見つかりませんでした';
                         final latitude =
@@ -264,10 +270,8 @@ class PicturePreviewScreen extends StatelessWidget {
                                 : null;
 
                         if (latitude != null && longitude != null) {
-                          // 正しい緯度・経度がある場合
                           print('緯度: $latitude, 経度: $longitude');
                         } else {
-                          // 緯度・経度が無効または不明な場合
                           print('緯度または経度が不明です');
                         }
 
@@ -287,7 +291,6 @@ class PicturePreviewScreen extends StatelessWidget {
                           ),
                         );
                       } else {
-                        // 未対応カテゴリ（念のため）
                         showDialog(
                           context: context,
                           builder:
@@ -308,7 +311,6 @@ class PicturePreviewScreen extends StatelessWidget {
                       );
                     }
                   },
-
                   icon: const Icon(
                     Icons.analytics,
                     color: Colors.white,
@@ -325,9 +327,7 @@ class PicturePreviewScreen extends StatelessWidget {
           ),
         ],
       ),
-
-      // Controlウィジェットを下部ナビゲーションに固定
-      bottomNavigationBar: Control(),
+      bottomNavigationBar: const Control(), // constを追加
     );
   }
 }

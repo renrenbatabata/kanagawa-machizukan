@@ -1,29 +1,26 @@
 // lib/widgets/result_actions.dart
+
 import 'package:flutter/material.dart';
 import 'package:frontend/screens/take_photo/take_photo_screen.dart';
+import 'package:frontend/screens/zukan_page/zukan.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:frontend/screens/auth_page/auth_service.dart'; // AuthServiceをインポート
-import 'package:flutter_dotenv/flutter_dotenv.dart'; // ★追加
+import 'package:frontend/screens/auth_page/auth_service.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class ResultActions extends StatelessWidget {
   final String uuid;
-  final String category; // カテゴリを受け取る
+  final String category;
 
-  const ResultActions({
-    super.key,
-    required this.uuid, // UUIDを受け取る
-    required this.category,
-  });
+  const ResultActions({super.key, required this.uuid, required this.category});
 
-  // 図鑑に登録する関数
   Future<void> _registerToEncyclopedia(BuildContext context) async {
     final baseUrl = dotenv.env['BASE_API_URL'];
     if (baseUrl == null) {
       _showErrorDialog(context, "APIのURLが設定されていません。");
       return;
     }
-    final uri = Uri.parse('$baseUrl/tuika'); // 新しいエンドポイント
+    final uri = Uri.parse('$baseUrl/DBAdd');
     final String? userId = AuthService().currentUserId;
 
     if (userId == null) {
@@ -32,22 +29,27 @@ class ResultActions extends StatelessWidget {
     }
 
     final dataToSend = {
-      'uuid': uuid, // UUIDを送信
+      'uuid': uuid, // UUIDをMapに入れる
+      // 必要であれば 'userId': userId, も含めることを検討
     };
+    // 送信するMapの中身を確認
 
     try {
+      // ★★★ ここが重要！http.post を使ってJSONボディを直接送る形に戻す ★★★
       final response = await http.post(
         uri,
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode(dataToSend),
+        body: jsonEncode(dataToSend), // MapをJSON文字列に変換して送信
       );
+      print('送信後！$dataToSend');
 
       if (response.statusCode == 200) {
-        final responseBody = jsonDecode(response.body);
+        final responseBody = jsonDecode(response.body); // JSONレスポンスのデコード
         print('✅ 図鑑に登録成功: $responseBody');
         _showSuccessDialog(context, "図鑑に登録しました！");
       } else {
         print('❌ サーバーエラー（登録）: ${response.statusCode}');
+        // http.post の場合は response.body でエラーボディが直接取得できる
         print('エラーレスポンスボディ: ${response.body}');
         _showErrorDialog(context, "登録に失敗しました。もう一度お試しください。");
       }
@@ -57,7 +59,6 @@ class ResultActions extends StatelessWidget {
     }
   }
 
-  // エラーダイアログを表示するヘルパー関数
   void _showErrorDialog(BuildContext context, String message) {
     showDialog(
       context: context,
@@ -75,7 +76,6 @@ class ResultActions extends StatelessWidget {
     );
   }
 
-  // 成功ダイアログを表示するヘルパー関数
   void _showSuccessDialog(BuildContext context, String message) {
     showDialog(
       context: context,
@@ -85,8 +85,26 @@ class ResultActions extends StatelessWidget {
             content: Text(message),
             actions: [
               TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text("OK"),
+                onPressed: () {
+                  Navigator.pop(context);
+                  Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(builder: (context) => const Zukan()),
+                    (Route<dynamic> route) => false,
+                  );
+                },
+                child: const Text("ずかんをみる"),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(
+                      builder: (context) => TakePhotoScreen(category: category),
+                    ),
+                    (Route<dynamic> route) => false,
+                  );
+                },
+                child: const Text("もういちどさつえい"),
               ),
             ],
           ),
@@ -97,10 +115,9 @@ class ResultActions extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // 図鑑に登録するボタン
         ElevatedButton.icon(
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue, // 登録ボタンの色を青に
+            backgroundColor: Colors.blue,
             foregroundColor: Colors.white,
             padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
             shape: RoundedRectangleBorder(
@@ -112,10 +129,9 @@ class ResultActions extends StatelessWidget {
           label: const Text("ずかんにとうろくする", style: TextStyle(fontSize: 20)),
         ),
         const SizedBox(height: 16),
-        // とりなおすボタン
         ElevatedButton.icon(
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.red, // とりなおすボタンの色を赤に
+            backgroundColor: Colors.red,
             foregroundColor: Colors.white,
             padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
             shape: RoundedRectangleBorder(
@@ -123,13 +139,12 @@ class ResultActions extends StatelessWidget {
             ),
           ),
           onPressed: () {
-            // 撮影ページに遷移
             Navigator.pushAndRemoveUntil(
               context,
               MaterialPageRoute(
                 builder: (context) => TakePhotoScreen(category: category),
               ),
-              (Route<dynamic> route) => false, // これで全ての前のルートを削除
+              (Route<dynamic> route) => false,
             );
           },
           icon: const Icon(Icons.refresh),

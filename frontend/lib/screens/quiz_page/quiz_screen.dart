@@ -43,10 +43,18 @@ class _QuizScreenState extends State<QuizScreen> {
   Future<void> _fetchQuizQuestions() async {
     // ★★★ JavaバックエンドのクイズAPIエンドポイントに置き換える ★★★
     // 例: http://10.17.6.221:8080/api/quizzes
-    final url = Uri.parse('http://192.168.3.171:8080/quiz');
+    final baseUrl = dotenv.env['BASE_API_URL'];
+    if (baseUrl == null) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'APIのURLが設定されていません。';
+      });
+      return;
+    }
+    final uri = Uri.parse('$baseUrl/quiz'); // APIのエンドポイント
 
     try {
-      final response = await http.get(url);
+      final response = await http.get(uri);
 
       if (response.statusCode == 200) {
         final List<dynamic> jsonList = jsonDecode(response.body);

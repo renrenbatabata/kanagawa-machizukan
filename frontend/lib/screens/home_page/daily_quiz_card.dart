@@ -65,7 +65,7 @@ class _DailyQuizCardState extends State<DailyQuizCard> {
       _showErrorDialog(context, "APIのURLが設定されていません。");
       return;
     }
-    final uri = Uri.parse('$baseUrl/quirz'); // APIのエンドポイント
+    final uri = Uri.parse('$baseUrl/quiz'); // APIのエンドポイント
 
     try {
       final response = await http.get(uri);
