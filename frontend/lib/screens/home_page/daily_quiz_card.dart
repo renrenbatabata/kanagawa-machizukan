@@ -7,6 +7,7 @@ import 'package:frontend/screens/quiz_page/quiz_screen.dart'; // QuizScreenを�
 import 'dart:math'; // Randomクラスを使用するためにインポート
 import 'package:http/http.dart' as http; // HTTPリクエスト用
 import 'dart:convert'; // JSONデコード用
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 // ホーム画面に表示する簡易クイズカード
 class DailyQuizCard extends StatefulWidget {
@@ -17,7 +18,7 @@ class DailyQuizCard extends StatefulWidget {
 }
 
 class _DailyQuizCardState extends State<DailyQuizCard> {
-  // ★★★ 修正点: データの状態管理変数 ★★★
+  //  データの状態管理変数
   QuizQuestion? _dailyQuestion; // その日のクイズ問題（Nullableにする）
   bool _isLoading = true; // データのロード中かどうかのフラグ
   String? _errorMessage; // エラーメッセージ
@@ -25,25 +26,49 @@ class _DailyQuizCardState extends State<DailyQuizCard> {
   int? _selectedOptionIndex; // 選択された選択肢のインデックス
   bool _isAnswerChecked = false; // 回答がチェックされたかどうかのフラグ
 
+  // エラーダイアログを表示するメソッドを追加
+  Future<void> _showErrorDialog(BuildContext context, String message) async {
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('エラー'),
+          content: Text(message),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   void initState() {
     super.initState();
     _fetchAndSetDailyQuiz(); // 画面が初期化されるときにその日のクイズを生成
   }
 
-  // ★★★ 追加: バックエンドからクイズ問題を取得し、日替わりクイズをセットする関数 ★★★
+  // ★★★  バックエンドからクイズ問題を取得し、日替わりクイズをセットする関数 ★★★
   Future<void> _fetchAndSetDailyQuiz() async {
     setState(() {
       _isLoading = true;
       _errorMessage = null;
     });
 
-    final url = Uri.parse(
-      'http://192.168.3.171:8080/quiz',
-    ); // ★★★ JavaバックエンドのクイズAPIエンドポイント ★★★
+    final baseUrl = dotenv.env['BASE_API_URL'];
+    if (baseUrl == null) {
+      _showErrorDialog(context, "APIのURLが設定されていません。");
+      return;
+    }
+    final uri = Uri.parse('$baseUrl/quirz'); // APIのエンドポイント
 
     try {
-      final response = await http.get(url);
+      final response = await http.get(uri);
 
       if (response.statusCode == 200) {
         final List<dynamic> jsonList = jsonDecode(response.body);

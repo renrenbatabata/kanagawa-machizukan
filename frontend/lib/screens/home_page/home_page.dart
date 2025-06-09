@@ -5,12 +5,19 @@ import 'package:frontend/widgets/header.dart';
 import 'package:frontend/widgets/control.dart';
 import 'package:frontend/screens/home_page/kanagawa_love_area.dart';
 import 'package:frontend/screens/home_page/daily_quiz_card.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final String? admobId = dotenv.env['ADMOB_BANNER_ID'];
+    if (admobId == null) {
+      print('❌ ADMOB_BANNER_IDが設定されていません。');
+    } else {
+      print('✅ ADMOB_BANNER_ID: $admobId');
+    }
     return Scaffold(
       body: Column(
         children: [
@@ -24,9 +31,8 @@ class HomePage extends StatelessWidget {
                   const SizedBox(height: 16),
 
                   const KanagawaLoveArea(),
-                  const AdBanner(
-                    adUnitId:
-                        'ca-app-pub-3940256099942544/6300978111', // ホーム画面用のテストID
+                  AdBanner(
+                    adUnitId: admobId!, // ホーム画面用のテストID
                   ),
                   const SizedBox(height: 10),
                 ],

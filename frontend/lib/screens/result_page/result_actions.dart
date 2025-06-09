@@ -4,24 +4,26 @@ import 'package:frontend/screens/take_photo/take_photo_screen.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:frontend/screens/auth_page/auth_service.dart'; // AuthServiceをインポート
+import 'package:flutter_dotenv/flutter_dotenv.dart'; // ★追加
 
 class ResultActions extends StatelessWidget {
-  final Map<String, dynamic> resultData; // 結果データ全体を受け取る
-  final String imagePath; // 画像のパス
-  final String category; // カテゴリ
+  final String uuid;
+  final String category; // カテゴリを受け取る
 
   const ResultActions({
     super.key,
-    required this.resultData,
-    required this.imagePath,
+    required this.uuid, // UUIDを受け取る
     required this.category,
   });
 
   // 図鑑に登録する関数
   Future<void> _registerToEncyclopedia(BuildContext context) async {
-    final uri = Uri.parse(
-      'http://10.17.9.86:8080/register_entry',
-    ); // 新しいエンドポイント
+    final baseUrl = dotenv.env['BASE_API_URL'];
+    if (baseUrl == null) {
+      _showErrorDialog(context, "APIのURLが設定されていません。");
+      return;
+    }
+    final uri = Uri.parse('$baseUrl/tuika'); // 新しいエンドポイント
     final String? userId = AuthService().currentUserId;
 
     if (userId == null) {
@@ -29,12 +31,8 @@ class ResultActions extends StatelessWidget {
       return;
     }
 
-    // 送信するデータを準備
-    final Map<String, dynamic> dataToSend = {
-      'userId': userId,
-      'category': category,
-      'imagePath': imagePath, // 画像のパスも保存対象に含める
-      ...resultData, // 結果ページのデータを展開して含める
+    final dataToSend = {
+      'uuid': uuid, // UUIDを送信
     };
 
     try {

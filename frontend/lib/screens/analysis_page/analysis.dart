@@ -10,6 +10,7 @@ import 'dart:convert'; //jsonデコード
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:frontend/screens/auth_page/auth_service.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 Future<Map<String, dynamic>?> uploadImageToPythonServer(
   File imageFile,
@@ -18,7 +19,13 @@ Future<Map<String, dynamic>?> uploadImageToPythonServer(
   String? address,
   String userId,
 ) async {
-  final uri = Uri.parse('http://192.168.3.171:8080/analyze');
+  final baseUrl = dotenv.env['BASE_API_URL'];
+  if (baseUrl == null) {
+    print('❌ BASE_API_URLが設定されていません。');
+    return null;
+  }
+  // print(baseUrl);
+  final uri = Uri.parse('$baseUrl/analyze'); // APIのエンドポイント
 
   final request = http.MultipartRequest('POST', uri);
   request.files.add(await http.MultipartFile.fromPath('image', imageFile.path));

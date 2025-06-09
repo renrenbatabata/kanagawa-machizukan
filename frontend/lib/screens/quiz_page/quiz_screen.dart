@@ -9,6 +9,7 @@ import 'package:frontend/screens/quiz_page/quiz_data.dart'; // QuizQuestionモ�
 import 'dart:math'; // Randomクラスを使用するためにインポート
 import 'package:http/http.dart' as http; // HTTPリクエスト用
 import 'dart:convert'; // JSONデコード用
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class QuizScreen extends StatefulWidget {
   const QuizScreen({super.key});
@@ -40,14 +41,9 @@ class _QuizScreenState extends State<QuizScreen> {
 
   // ★★★ 追加: Java バックエンドからクイズ問題を取得する関数 ★★★
   Future<void> _fetchQuizQuestions() async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
-
     // ★★★ JavaバックエンドのクイズAPIエンドポイントに置き換える ★★★
     // 例: http://10.17.6.221:8080/api/quizzes
-    final url = Uri.parse('http://192.168.3.171:8080/quiz'); // <-- ここを正しいURLに！
+    final url = Uri.parse('http://192.168.3.171:8080/quiz');
 
     try {
       final response = await http.get(url);
@@ -135,6 +131,16 @@ class _QuizScreenState extends State<QuizScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final String? admobId = dotenv.env['ADMOB_BANNER_ID'];
+    if (admobId == null) {
+      print('❌ ADMOB_BANNER_IDが設定されていません。');
+    } else {
+      print('✅ ADMOB_BANNER_ID: $admobId');
+    }
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
     // ★★★ 修正: ローディング中、エラー時、問題がない場合の表示ロジック ★★★
     if (_isLoading) {
       return Scaffold(
@@ -560,8 +566,8 @@ class _QuizScreenState extends State<QuizScreen> {
           ),
 
           // 広告バナー
-          const AdBanner(
-            adUnitId: 'ca-app-pub-3940256099942544/6300978111', // ホーム画面用のテストID
+          AdBanner(
+            adUnitId: admobId!, // ホーム画面用のテストID
           ),
           const Control(), // 共通フッター
         ],
