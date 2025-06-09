@@ -1,45 +1,58 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/widgets/colors.dart';
-import 'package:frontend/screens/zukan_page/zukan_detail_page.dart'; // ZukanDetailPageをインポート
+import 'package:frontend/screens/zukan_page/zukan_detail_page.dart';
+import 'dart:convert'; // base64Decodeのために追加
+import 'package:http/http.dart' as http; // httpパッケージをインポート
+import 'package:flutter_dotenv/flutter_dotenv.dart'; // .envファイルから環境変数を読み込むため
+import 'package:frontend/screens/auth_page/auth_service.dart'; // AuthServiceをインポート
 
 class ZukanItem {
-  final String id;
+  final int id; // ⭐ int 型
+  final String category;
   final String name;
-  final String? imageUrl;
+  final String? shootingLocation;
+  final String? rawImageData; // Base64エンコードされた画像データ
   final String? discoveredDate;
   final bool isDiscovered;
   final String? hint;
-  final String category; // ★追加：カテゴリ情報を保持
+  final String? imageUrl; // アプリ内アセットURLなど、rawImageDataとは別の画像URL
 
   ZukanItem({
     required this.id,
+    required this.category,
     required this.name,
-    this.imageUrl,
+    this.shootingLocation,
+    this.rawImageData,
     this.discoveredDate,
     required this.isDiscovered,
     this.hint,
-    required this.category, // ★追加：コンストラクタで必須に
+    this.imageUrl,
   });
 
   factory ZukanItem.fromJson(Map<String, dynamic> json) {
     return ZukanItem(
-      id: json['id'],
-      name: json['name'],
-      imageUrl: json['imageUrl'],
-      discoveredDate: json['discoveredDate'],
-      isDiscovered: json['isDiscovered'],
-      hint: json['hint'],
-      category: json['category'], // ★追加：JSONからパース
+      id: json['id'] as int, // ⭐ ここを int にキャスト
+      category: json['category'] as String,
+      name: json['name'] as String,
+      shootingLocation: json['shootingLocation'] as String?,
+      rawImageData: json['imageData'] as String?,
+      discoveredDate: json['discoveredDate'] as String?,
+      isDiscovered: json['isDiscovered'] as bool? ?? false,
+      hint: json['hint'] as String?,
+      imageUrl: json['imageUrl'] as String?,
     );
   }
 }
 
 class ZukanCard extends StatefulWidget {
   final ZukanItem item;
-  final Color cardColor; // カードの背景色を受け取る
+  final Color cardColor;
 
-  const ZukanCard({Key? key, required this.item, required this.cardColor})
-    : super(key: key);
+  const ZukanCard({
+    super.key,
+    required this.item,
+    required this.cardColor,
+  }); // super.keyを使用
 
   @override
   State<ZukanCard> createState() => _ZukanCardState();
@@ -48,105 +61,138 @@ class ZukanCard extends StatefulWidget {
 class _ZukanCardState extends State<ZukanCard> {
   String? _displayedHint;
 
-  // ★追加：_fetchHint 関数をここに定義します
-  Future<String> _fetchHint(String itemId) async {
-    await Future.delayed(const Duration(milliseconds: 500)); // API遅延をシミュレート
-    // ここでitemIdに基づいて適切なヒントを返します
-    if (itemId == 'sugiyama1') {
-      return '神奈川区で最も古い神社の一つです。';
-    } else if (itemId == 'kame_mystery') {
-      return '公園に隠れているカメだよ。';
-    } else if (itemId == 'jindaiji') {
-      return '鎌倉時代から続く古社で、広大な公園が隣接しています。';
-    } else if (itemId == 'sugiyama2') {
-      return '高台にある静かな神社だよ。';
-    } else if (itemId == 'kame_park') {
-      return '三ツ沢公園で子どもたちと遊んでいるよ。';
-    } else if (itemId == 'flower_sakura') {
-      return '春に咲く代表的な花だよ。';
-    } else if (itemId == 'flower_himawari') {
-      return '夏に太陽に向かって咲く大きな花だよ。';
-    }
-    return 'ヒントはありません。';
+  // Base64データのプレフィックスを除去する関数
+  String _stripBase64Prefix(String base64String) {
+    final regex = RegExp(r'data:image/[^;]+;base64,');
+    return base64String.replaceFirst(regex, '');
   }
 
-  // 仮のAPI呼び出し関数 (実際はJavaバックエンドとの通信に置き換える)
-  Future<Map<String, dynamic>> _fetchDetails(String itemId) async {
-    await Future.delayed(const Duration(milliseconds: 700)); // API遅延をシミュレート
-    // バックエンドから取得する詳細情報に hiraganaName や location を追加
-    if (itemId == 'sugiyama1') {
-      return {
-        'id': itemId,
-        'name': '杉山神社',
-        'hiraganaName': 'すぎやまじんじゃ', // ★追加
-        'description':
-            '横浜市内最古の歴史を持つといわれる「杉山神社」の一社で、神奈川区の総鎮守として地域住民に親しまれています。区役所の裏手の高台に位置し、静かで厳かな雰囲気です。例大祭では多くの人で賑わいます。',
-        'location': '神奈川区広台太田町', // ★追加
-        'imageUrl': 'images/sugiyama_jinja.jpg', // 仮の画像パス
-        'discoveredDate': '2025年5月5日', // 詳細ページで表示するために必要なら追加
-      };
-    } else if (itemId == 'jindaiji') {
-      return {
-        'id': itemId,
-        'name': '神大寺神明社',
-        'hiraganaName': 'じんだいじしんめいしゃ',
-        'description':
-            '地域名にもなっている古社で、創建は鎌倉時代とも伝えられています。広々とした境内で、地域住民の信仰を集めています。隣接して広大な公園があり、散策にも適しています。',
-        'location': '神奈川区神大寺',
-        'imageUrl': 'images/jindaiji_jinja.jpg',
-        'discoveredDate': '2025年5月10日',
-      };
-    } else if (itemId == 'kame_park') {
-      return {
-        'id': itemId,
-        'name': '公園のカメ太郎オブジェ',
-        'hiraganaName': 'こうえんのかめたろうおぶじぇ',
-        'description':
-            '神奈川区のあちこちに隠れている、区のキャラクター「かめ太郎」のオブジェの一つだよ。公園で子どもたちと遊んでいるかも？',
-        'location': '三ツ沢公園',
-        'imageUrl': 'images/kame_park.jpg',
-        'discoveredDate': '2025年5月15日',
-      };
-    } else if (itemId == 'flower_sakura') {
-      return {
-        'id': itemId,
-        'name': 'サクラ',
-        'hiraganaName': 'さくら',
-        'description': '日本を代表する花で、春に美しいピンク色の花を咲かせます。お花見の季節には多くの人を魅了します。',
-        'location': '区内各地',
-        'imageUrl': 'images/flower_sakura.jpg',
-        'discoveredDate': '2025年4月1日',
-      };
-    } else if (itemId == 'flower_himawari') {
-      return {
-        'id': itemId,
-        'name': 'ヒマワリ',
-        'hiraganaName': 'ひまわり',
-        'description': '夏を代表する花で、太陽に向かって大きく咲く黄色い花が特徴です。元気をもらえる花として親しまれています。',
-        'location': '畑や公園',
-        'imageUrl': 'images/flower_himawari.jpg',
-        'discoveredDate': '2025年7月20日', // 例として
-      };
+  @override
+  void initState() {
+    super.initState();
+    print('--- ZukanCard Debug - Item ID: ${widget.item.id} ---');
+    print('  Category: ${widget.item.category}');
+    print('  Name: ${widget.item.name}');
+    print('  Is Discovered: ${widget.item.isDiscovered}');
+    print('  Discovered Date: ${widget.item.discoveredDate}');
+    print('  Shooting Location: ${widget.item.shootingLocation}');
+    print('  Raw Image Data (present): ${widget.item.rawImageData != null}');
+    if (widget.item.rawImageData != null) {
+      print(
+        '  Raw Image Data (start): ${widget.item.rawImageData!.substring(0, (widget.item.rawImageData!.length > 50 ? 50 : widget.item.rawImageData!.length))}...',
+      );
     }
-    return {
-      'id': itemId,
-      'name': '不明なアイテム',
-      'hiraganaName': '',
-      'description': '情報が見つかりませんでした。',
-      'location': '',
-      'imageUrl': null,
-      'discoveredDate': '',
-    };
+    print('  Image URL: ${widget.item.imageUrl}');
+    print('  Hint: ${widget.item.hint}');
+    print('--- End ZukanCard Debug ---');
+  }
+
+  // --- ⭐ _fetchHint の引数を int に修正 ⭐ ---
+  Future<String> _fetchHint(int itemId) async {
+    final baseUrl = dotenv.env['BASE_API_URL'];
+    final userId = AuthService().currentUserId;
+
+    if (baseUrl == null) {
+      print('❌ エラー: BASE_API_URLが設定されていません。');
+      return 'ヒントの取得に失敗しました (設定エラー)。';
+    }
+    if (userId == null) {
+      print('❌ エラー: ユーザーIDが取得できません。ヒントの取得にはログインが必要です。');
+      return 'ヒントの取得に失敗しました (未ログイン)。';
+    }
+
+    final uri = Uri.parse('$baseUrl/zukan/item/hint').replace(
+      queryParameters: {
+        'userId': userId,
+        'itemId': itemId.toString(), // intをStringに変換して送信
+      },
+    );
+
+    try {
+      final response = await http.get(uri);
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseBody = json.decode(response.body);
+        return responseBody['hintText'] as String? ?? 'ヒントが見つかりませんでした。';
+      } else {
+        print('❌ ヒント取得サーバーエラー: ${response.statusCode}');
+        print('エラーレスポンスボディ (ヒント): ${response.body}');
+        return 'ヒントの取得に失敗しました (エラーコード: ${response.statusCode})。';
+      }
+    } catch (e) {
+      print('❌ ヒント取得通信エラー: $e');
+      return 'ヒントの取得に失敗しました (通信エラー)。';
+    }
+  }
+
+  // --- ⭐ _fetchDetails の引数を int に修正 ⭐ ---
+  Future<Map<String, dynamic>> _fetchDetails(int itemId) async {
+    final baseUrl = dotenv.env['BASE_API_URL'];
+    final userId = AuthService().currentUserId;
+
+    if (baseUrl == null) {
+      print('❌ エラー: BASE_API_URLが設定されていません。');
+      return {'error': '設定エラー'};
+    }
+    if (userId == null) {
+      print('❌ エラー: ユーザーIDが取得できません。詳細の取得にはログインが必要です。');
+      return {'error': '未ログイン'};
+    }
+
+    final uri = Uri.parse('$baseUrl/zukan/item/details').replace(
+      queryParameters: {
+        'userId': userId,
+        'itemId': itemId.toString(), // intをStringに変換して送信
+      },
+    );
+
+    try {
+      final response = await http.get(uri);
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> result = json.decode(response.body);
+        print('✅ 詳細データ取得成功: $result');
+        return result;
+      } else {
+        print('❌ 詳細取得サーバーエラー: ${response.statusCode}');
+        print('エラーレスポンスボディ (詳細): ${response.body}');
+        return {'error': 'サーバーエラー', 'statusCode': response.statusCode};
+      }
+    } catch (e) {
+      print('❌ 詳細取得通信エラー: $e');
+      return {'error': '通信エラー', 'exception': e.toString()};
+    }
   }
 
   void _showDetailsPage(BuildContext context, Map<String, dynamic> details) {
+    if (details.containsKey('error')) {
+      showDialog(
+        context: context,
+        builder:
+            (_) => AlertDialog(
+              title: const Text("エラー"),
+              content: Text("詳細情報の取得に失敗しました: ${details['error']}"),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('OK'),
+                ),
+              ],
+            ),
+      );
+      return;
+    }
+
     Navigator.push(
       context,
       MaterialPageRoute(
         builder:
             (context) => ZukanDetailPage(
               details: details,
-              capturedImagePath: details['imageUrl'], // 例: バックエンドが公式画像URLを返した場合
+              capturedImagePath:
+                  details['rawImageData'] != null
+                      ? 'data:image/jpeg;base64,${_stripBase64Prefix(details['rawImageData'] as String)}'
+                      : details['imageUrl'] as String?,
             ),
       ),
     );
@@ -160,36 +206,28 @@ class _ZukanCardState extends State<ZukanCard> {
     return GestureDetector(
       onTap: () async {
         if (widget.item.isDiscovered) {
-          // 発見済みの場合、詳細情報を取得して詳細ページへ遷移
-          final details = await _fetchDetails(widget.item.id);
+          final details = await _fetchDetails(widget.item.id); // ⭐ int型を直接渡す
           _showDetailsPage(context, details);
         } else if (showCallToAction) {
-          // ここで showCallToAction をチェック
-          // 「撮影して図鑑に登録しよう！」の場合、何もしないか、カメラ起動などのアクションを促す
-          print('カメラ起動を促すアクション'); // デバッグ用
+          print('カメラ起動を促すアクション');
+          // ここでカメラ起動のロジックや、カメラページへの遷移などを実装します。
+          // 例: Navigator.push(context, MaterialPageRoute(builder: (context) => CameraPage(category: 'flower')));
         } else if (!widget.item.isDiscovered && _displayedHint == null) {
-          // 未発見かつヒント未表示の場合、ヒントを取得して表示
           setState(() {
-            _displayedHint = 'ヒントを取得中...'; // ローディング表示
+            _displayedHint = 'ヒントを取得中...';
           });
-          String hint = await _fetchHint(widget.item.id);
+          String hint = await _fetchHint(widget.item.id); // ⭐ int型を直接渡す
           setState(() {
             _displayedHint = hint;
           });
-        } else if (!widget.item.isDiscovered && _displayedHint != null) {
-          // 未発見でヒント表示中の場合、何もしない（あるいはヒントを再度非表示にするなどの処理）
-          // 今回はシンプルに何もしない
         }
       },
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.all(12.0),
-        margin: const EdgeInsets.symmetric(
-          vertical: 8.0,
-          horizontal: 10.0,
-        ), // カード間の余白
+        margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 10.0),
         decoration: BoxDecoration(
-          color: widget.cardColor, // 親から受け取った色を使用
+          color: widget.cardColor,
           borderRadius: BorderRadius.circular(15.0),
           boxShadow: [
             BoxShadow(
@@ -207,7 +245,7 @@ class _ZukanCardState extends State<ZukanCard> {
               width: 90,
               height: 90,
               decoration: BoxDecoration(
-                color: Colors.grey[200], // 画像がない場合のプレースホルダー色
+                color: Colors.grey[200],
                 borderRadius: BorderRadius.circular(10.0),
               ),
               child:
@@ -215,36 +253,63 @@ class _ZukanCardState extends State<ZukanCard> {
                       ? ClipRRect(
                         borderRadius: BorderRadius.circular(10.0),
                         child: Image.asset(
-                          'images/camera_placeholder.png', // カメラアイコンや特別な画像を配置
+                          'images/camera_placeholder.png',
                           fit: BoxFit.cover,
                         ),
                       )
                       : widget.item.isDiscovered
-                      ? ClipRRect(
-                        borderRadius: BorderRadius.circular(10.0),
-                        child: Image.asset(
-                          widget.item.imageUrl ??
-                              'images/placeholder.png', // 画像がなければプレースホルダー
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return const Icon(
-                              Icons.broken_image,
+                      ? (widget.item.rawImageData != null
+                          ? ClipRRect(
+                            borderRadius: BorderRadius.circular(10.0),
+                            child: Image.memory(
+                              base64Decode(
+                                _stripBase64Prefix(widget.item.rawImageData!),
+                              ),
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                print(
+                                  'Error loading image from Base64: $error',
+                                );
+                                return const Icon(
+                                  Icons.broken_image,
+                                  size: 50,
+                                  color: Colors.grey,
+                                );
+                              },
+                            ),
+                          )
+                          : widget.item.imageUrl != null
+                          ? ClipRRect(
+                            borderRadius: BorderRadius.circular(10.0),
+                            child: Image.network(
+                              widget.item.imageUrl!,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                print('Error loading network image: $error');
+                                return const Icon(
+                                  Icons.broken_image,
+                                  size: 50,
+                                  color: Colors.grey,
+                                );
+                              },
+                            ),
+                          )
+                          : Center(
+                            child: Icon(
+                              Icons.image_not_supported,
                               size: 50,
-                              color: Colors.grey,
-                            );
-                          },
-                        ),
-                      )
+                              color: Colors.grey[600],
+                            ),
+                          ))
                       : Center(
                         child: Icon(
-                          Icons.help_outline, // 未発見を示すアイコン
+                          Icons.help_outline,
                           size: 50,
                           color: Colors.grey[600],
                         ),
                       ),
             ),
             const SizedBox(width: 15.0),
-            // 情報表示部分
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -254,14 +319,13 @@ class _ZukanCardState extends State<ZukanCard> {
                         ? '撮影して図鑑に登録しよう！'
                         : widget.item.isDiscovered
                         ? widget.item.name
-                        : (_displayedHint ?? '??????'), // ヒント表示中か未発見か
+                        : (_displayedHint ?? '??????'),
                     style: TextStyle(
-                      fontSize: showCallToAction ? 16 : 18, // テキストサイズを調整
+                      fontSize: showCallToAction ? 16 : 18,
                       fontWeight: FontWeight.bold,
                       color:
                           showCallToAction
-                              ? AppColors
-                                  .blue // 目を引く色に
+                              ? AppColors.blue
                               : widget.item.isDiscovered ||
                                   _displayedHint != null
                               ? Colors.black87
@@ -269,13 +333,11 @@ class _ZukanCardState extends State<ZukanCard> {
                     ),
                   ),
                   const SizedBox(height: 5.0),
-                  if (!showCallToAction) // 「撮影して図鑑に登録しよう」の場合は表示しない
+                  if (!showCallToAction)
                     Text(
                       widget.item.isDiscovered
                           ? '発見日: ${widget.item.discoveredDate}'
-                          : (_displayedHint == null
-                              ? 'タップしてヒントを見る'
-                              : ''), // ヒント表示中の場合は空文字
+                          : (_displayedHint == null ? 'タップしてヒントを見る' : ''),
                       style: TextStyle(
                         fontSize: 14,
                         color:
@@ -289,7 +351,7 @@ class _ZukanCardState extends State<ZukanCard> {
                     const Padding(
                       padding: EdgeInsets.only(top: 8.0),
                       child: LinearProgressIndicator(
-                        color: AppColors.blue, // プログレスバーの色を調整
+                        color: AppColors.blue,
                         backgroundColor: AppColors.blueSub,
                       ),
                     ),

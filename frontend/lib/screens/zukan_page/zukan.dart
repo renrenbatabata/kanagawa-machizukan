@@ -8,7 +8,7 @@ import 'package:frontend/screens/zukan_page/zukan_list_container.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:frontend/screens/auth_page/auth_service.dart';
+import 'package:frontend/screens/auth_page/auth_service.dart'; // AuthServiceをインポート
 import 'package:frontend/screens/zukan_page/zukan_card.dart' show ZukanItem;
 
 class Zukan extends StatefulWidget {
@@ -85,7 +85,7 @@ class _ZukanState extends State<Zukan> {
     ).replace(queryParameters: {'userId': userId, 'category': apiCategory});
 
     try {
-      final response = await http.post(uri);
+      final response = await http.post(uri); // POSTリクエストを送信
 
       // --- デバッグ情報 ---
       print('--- API Response Debug ---');
@@ -101,6 +101,8 @@ class _ZukanState extends State<Zukan> {
           allZukanItems =
               jsonList.map((json) => ZukanItem.fromJson(json)).toList();
           _isLoading = false;
+
+          print('図鑑アイテムの取得に成功: ${allZukanItems.length}件');
         });
       } else {
         setState(() {
