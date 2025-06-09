@@ -1,14 +1,14 @@
-// lib/screens/quiz_page/quiz_screen.dart
+// lib/screens/quiz_page/quiz_screen.dart の修正案
 
 import 'package:flutter/material.dart';
 import 'package:frontend/widgets/ad_banner.dart';
-import 'package:frontend/widgets/header.dart'; // ImageHeaderをインポート
-import 'package:frontend/widgets/control.dart'; // Controlをインポート
-import 'package:frontend/widgets/colors.dart'; // AppColorsをインポート (ColorExtensionもここから利用されます)
-import 'package:frontend/screens/quiz_page/quiz_data.dart'; // QuizQuestionモデルをインポート
-import 'dart:math'; // Randomクラスを使用するためにインポート
-import 'package:http/http.dart' as http; // HTTPリクエスト用
-import 'dart:convert'; // JSONデコード用
+import 'package:frontend/widgets/header.dart';
+import 'package:frontend/widgets/control.dart';
+import 'package:frontend/widgets/colors.dart';
+import 'package:frontend/screens/quiz_page/quiz_data.dart';
+import 'dart:math';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class QuizScreen extends StatefulWidget {
@@ -19,39 +19,51 @@ class QuizScreen extends StatefulWidget {
 }
 
 class _QuizScreenState extends State<QuizScreen> {
-  // ★★★ 修正点: データの状態管理変数 ★★★
-  List<QuizQuestion>? _allQuizQuestions; // バックエンドから取得した全クイズ問題
-  List<QuizQuestion> _dailyQuizQuestions = []; // その日のクイズ問題リスト
+  List<QuizQuestion>? _allQuizQuestions;
+  List<QuizQuestion> _dailyQuizQuestions = [];
 
-  // ★★★ 修正点: ローディングとエラーの状態管理 ★★★
-  bool _isLoading = true; // データのロード中かどうかのフラグ
-  String? _errorMessage; // エラーメッセージ
+  bool _isLoading = true;
+  String? _errorMessage;
 
-  int _currentQuestionIndex = 0; // 現在の問題のインデックス
-  int? _selectedOptionIndex; // 選択された選択肢のインデックス
-  bool _isAnswerChecked = false; // 回答がチェックされたかどうかのフラグ
-  int _score = 0; // スコア
-  bool _quizFinished = false; // クイズが終了したかどうかのフラグ
+  int _currentQuestionIndex = 0;
+  int? _selectedOptionIndex;
+  bool _isAnswerChecked = false;
+  int _score = 0;
+  bool _quizFinished = false;
 
   @override
   void initState() {
     super.initState();
-    _fetchQuizQuestions(); // 画面が初期化されるときにJava APIからクイズデータを取得
+    // ここで一度だけローディング状態を開始し、エラーメッセージをリセットする
+    _isLoading = true; // 初回ロード時にtrue
+    _errorMessage = null; // 初回ロード時にエラーメッセージをリセット
+    _fetchQuizQuestions();
   }
 
-  // ★★★ 追加: Java バックエンドからクイズ問題を取得する関数 ★★★
   Future<void> _fetchQuizQuestions() async {
-    // ★★★ JavaバックエンドのクイズAPIエンドポイントに置き換える ★★★
-    // 例: http://10.17.6.221:8080/api/quizzes
+    // データ取得開始時にローディング状態を設定
+    // initStateで既に設定済みなので、ここでは不要な可能性もあるが、
+    // リトライボタンなどから呼ばれる可能性を考慮すると、ここにsetStateがあっても良い。
+    // ただし、無限ループを防ぐため、buildからは分離する。
+    if (mounted) {
+      // ウィジェットがまだマウントされているか確認
+      setState(() {
+        _isLoading = true;
+        _errorMessage = null;
+      });
+    }
+
     final baseUrl = dotenv.env['BASE_API_URL'];
     if (baseUrl == null) {
-      setState(() {
-        _isLoading = false;
-        _errorMessage = 'APIのURLが設定されていません。';
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = 'APIのURLが設定されていません。';
+        });
+      }
       return;
     }
-    final uri = Uri.parse('$baseUrl/quiz'); // APIのエンドポイント
+    final uri = Uri.parse('$baseUrl/quiz');
 
     try {
       final response = await http.get(uri);
@@ -60,7 +72,7 @@ class _QuizScreenState extends State<QuizScreen> {
         final List<dynamic> jsonList = jsonDecode(response.body);
         _allQuizQuestions =
             jsonList.map((json) => QuizQuestion.fromJson(json)).toList();
-        _generateDailyQuiz(); // 取得したデータでその日のクイズを生成
+        _generateDailyQuiz();
       } else {
         _errorMessage = 'クイズの取得に失敗しました: ${response.statusCode}';
         debugPrint('クイズAPIエラーレスポンス: ${response.body}');
@@ -69,20 +81,18 @@ class _QuizScreenState extends State<QuizScreen> {
       _errorMessage = 'ネットワークエラー: $e';
       debugPrint('クイズAPI通信エラー: $e');
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
-  // lib/screens/quiz_page/quiz_screen.dart の _QuizScreenState クラス内
-
-  // その日のクイズ問題を生成する関数 (バックエンドから取得した全問題を使用)
   void _generateDailyQuiz() {
-    // ★★★ 修正点: _allQuizQuestions がnullまたは空の場合は処理をスキップ ★★★
     if (_allQuizQuestions == null || _allQuizQuestions!.isEmpty) {
       _dailyQuizQuestions = [];
-      _quizFinished = true; // 問題がないのでクイズを終了状態にする
+      _quizFinished = true;
       return;
     }
 
@@ -92,46 +102,38 @@ class _QuizScreenState extends State<QuizScreen> {
         DateTime.now().year * 10000;
     final Random random = Random(todaySeed);
 
-    // ★★★ 修正点: _allQuizQuestions からシャッフルして問題を選択 ★★★
-    final List<QuizQuestion> shuffledQuestions = List.from(
-      _allQuizQuestions!,
-    ); // ここを修正
+    final List<QuizQuestion> shuffledQuestions = List.from(_allQuizQuestions!);
     shuffledQuestions.shuffle(random);
 
-    _dailyQuizQuestions = shuffledQuestions.take(5).toList(); // 最大5問に制限
+    _dailyQuizQuestions = shuffledQuestions.take(5).toList();
 
-    // 状態をリセット
     _currentQuestionIndex = 0;
     _selectedOptionIndex = null;
     _isAnswerChecked = false;
     _score = 0;
-    _quizFinished = false; // クイズが新しく始まるのでfalse
+    _quizFinished = false;
   }
 
-  // ★★★ 追加: 回答をチェックし、次の問題へ進む、またはクイズを終了する関数 ★★★
   void _checkAnswerAndProceed() {
     setState(() {
-      _isAnswerChecked = true; // 回答チェック済みフラグを立てる
+      _isAnswerChecked = true;
 
-      // 正解かどうかの判定
       if (_selectedOptionIndex ==
           _dailyQuizQuestions[_currentQuestionIndex].correctOptionIndex) {
         _score++;
       }
     });
 
-    // 解説表示後、少し遅延させてから次の問題へ自動で進む (または手動ボタン)
     Future.delayed(const Duration(seconds: 60), () {
-      // 2秒後に自動で次へ
-      if (!mounted) return; // ウィジェットがツリーに存在しない場合は何もしない
+      if (!mounted) return;
 
       setState(() {
         if (_currentQuestionIndex < _dailyQuizQuestions.length - 1) {
           _currentQuestionIndex++;
-          _selectedOptionIndex = null; // 選択肢をリセット
-          _isAnswerChecked = false; // 回答チェック済みフラグをリセット
+          _selectedOptionIndex = null;
+          _isAnswerChecked = false;
         } else {
-          _quizFinished = true; // クイズ終了
+          _quizFinished = true;
         }
       });
     });
@@ -145,11 +147,7 @@ class _QuizScreenState extends State<QuizScreen> {
     } else {
       print('✅ ADMOB_BANNER_ID: $admobId');
     }
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
-    // ★★★ 修正: ローディング中、エラー時、問題がない場合の表示ロジック ★★★
+
     if (_isLoading) {
       return Scaffold(
         backgroundColor: const Color(0xFFFFF6E5),
@@ -159,7 +157,7 @@ class _QuizScreenState extends State<QuizScreen> {
             children: [
               const CircularProgressIndicator(),
               const SizedBox(height: 20),
-              Text('クイズ問題を読み込み中...'),
+              const Text('クイズ問題を読み込み中...'), // constを追加
             ],
           ),
         ),
@@ -199,8 +197,6 @@ class _QuizScreenState extends State<QuizScreen> {
       );
     }
 
-    // ここは `_dailyQuizQuestions` が空の場合の処理
-    // _allQuizQuestionsが空の場合も、ここで処理されるべき
     if (_dailyQuizQuestions.isEmpty) {
       return Scaffold(
         backgroundColor: const Color(0xFFFFF6E5),
@@ -229,7 +225,6 @@ class _QuizScreenState extends State<QuizScreen> {
       );
     }
 
-    // クイズが終了した場合
     if (_quizFinished) {
       return Scaffold(
         backgroundColor: const Color(0xFFFFF6E5),
@@ -255,7 +250,7 @@ class _QuizScreenState extends State<QuizScreen> {
               ElevatedButton.icon(
                 onPressed: () {
                   setState(() {
-                    _generateDailyQuiz(); // 新しいクイズを生成してリセット
+                    _generateDailyQuiz();
                   });
                 },
                 icon: const Icon(Icons.refresh),
@@ -279,7 +274,7 @@ class _QuizScreenState extends State<QuizScreen> {
               const SizedBox(height: 15),
               ElevatedButton.icon(
                 onPressed: () {
-                  Navigator.pop(context); // ホーム画面に戻る
+                  Navigator.pop(context);
                 },
                 icon: const Icon(Icons.home),
                 label: const Text('ホームにもどる'),
@@ -305,7 +300,6 @@ class _QuizScreenState extends State<QuizScreen> {
       );
     }
 
-    // 現在の問題
     final QuizQuestion currentQuestion =
         _dailyQuizQuestions[_currentQuestionIndex];
 
@@ -320,7 +314,6 @@ class _QuizScreenState extends State<QuizScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // クイズの進捗表示
                   Align(
                     alignment: Alignment.centerRight,
                     child: Text(
@@ -333,8 +326,6 @@ class _QuizScreenState extends State<QuizScreen> {
                     ),
                   ),
                   const SizedBox(height: 20),
-
-                  // 問題文
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
@@ -360,8 +351,6 @@ class _QuizScreenState extends State<QuizScreen> {
                     ),
                   ),
                   const SizedBox(height: 10),
-
-                  // 選択肢
                   ...List.generate(currentQuestion.options.length, (index) {
                     final bool isCorrect =
                         index == currentQuestion.correctOptionIndex;
@@ -435,8 +424,6 @@ class _QuizScreenState extends State<QuizScreen> {
                     );
                   }),
                   const SizedBox(height: 30),
-
-                  // 回答チェックボタン
                   if (!_isAnswerChecked)
                     ElevatedButton.icon(
                       onPressed:
@@ -464,8 +451,6 @@ class _QuizScreenState extends State<QuizScreen> {
                         ),
                       ),
                     ),
-
-                  // 解説表示
                   if (_isAnswerChecked)
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -523,7 +508,6 @@ class _QuizScreenState extends State<QuizScreen> {
                         ),
                         const SizedBox(height: 20),
                         Center(
-                          // 次へボタンを中央寄せ
                           child: ElevatedButton.icon(
                             onPressed: () {
                               setState(() {
@@ -533,7 +517,7 @@ class _QuizScreenState extends State<QuizScreen> {
                                   _selectedOptionIndex = null;
                                   _isAnswerChecked = false;
                                 } else {
-                                  _quizFinished = true; // クイズ終了
+                                  _quizFinished = true;
                                 }
                               });
                             },
@@ -566,18 +550,15 @@ class _QuizScreenState extends State<QuizScreen> {
                             ),
                           ),
                         ),
+                        const SizedBox(height: 20),
+                        Center(child: AdBanner(adUnitId: admobId!)),
                       ],
                     ),
                 ],
               ),
             ),
           ),
-
-          // 広告バナー
-          AdBanner(
-            adUnitId: admobId!, // ホーム画面用のテストID
-          ),
-          const Control(), // 共通フッター
+          const Control(),
         ],
       ),
     );
