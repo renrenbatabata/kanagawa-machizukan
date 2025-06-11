@@ -4,19 +4,19 @@ import 'package:frontend/screens/analysis_page/analysis.dart';
 import 'package:frontend/widgets/back_button.dart';
 import 'package:frontend/widgets/speech_bubble.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:flutter/services.dart'; // HapticFeedbackのために追加
 
+// 位置情報取得の関数（変更なし）
 Future<Position> getCurrentLocation() async {
   bool serviceEnabled;
   LocationPermission permission;
 
-  // 位置情報サービスが有効か確認
   serviceEnabled = await Geolocator.isLocationServiceEnabled();
   if (!serviceEnabled) {
     debugPrint('位置情報サービスが無効です。');
     return Future.error('位置情報サービスが無効です。');
   }
 
-  // 権限を確認
   permission = await Geolocator.checkPermission();
   debugPrint('現在の権限: $permission');
   if (permission == LocationPermission.denied) {
@@ -32,7 +32,6 @@ Future<Position> getCurrentLocation() async {
     return Future.error('位置情報の権限が永久に拒否されています。');
   }
 
-  // 現在地を取得
   try {
     final position = await Geolocator.getCurrentPosition(
       desiredAccuracy: LocationAccuracy.high,
@@ -53,14 +52,32 @@ class TakePhotoScreen extends StatefulWidget {
   State<TakePhotoScreen> createState() => _TakePhotoScreenState();
 }
 
-class _TakePhotoScreenState extends State<TakePhotoScreen> {
+class _TakePhotoScreenState extends State<TakePhotoScreen>
+    with SingleTickerProviderStateMixin {
+  // ⭐ SingleTickerProviderStateMixin を追加
   late CameraController _controller;
   late Future<void> _initializeControllerFuture;
+  late AnimationController
+  _shutterButtonAnimationController; // ⭐ アニメーションコントローラー
+  late Animation<double> _shutterButtonScaleAnimation; // ⭐ 拡大縮小アニメーション
 
   @override
   void initState() {
     super.initState();
     _initCamera();
+
+    // ⭐ アニメーションコントローラーの初期化
+    _shutterButtonAnimationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 150), // 短い時間で素早くアニメーション
+    );
+    // ⭐ 拡大縮小アニメーションの定義（通常サイズから少し小さく、元に戻る）
+    _shutterButtonScaleAnimation = Tween<double>(begin: 1.0, end: 0.9).animate(
+      CurvedAnimation(
+        parent: _shutterButtonAnimationController,
+        curve: Curves.easeOut,
+      ),
+    );
   }
 
   Future<void> _initCamera() async {
@@ -75,6 +92,7 @@ class _TakePhotoScreenState extends State<TakePhotoScreen> {
   @override
   void dispose() {
     _controller.dispose();
+    _shutterButtonAnimationController.dispose(); // ⭐ アニメーションコントローラーの解放
     super.dispose();
   }
 
@@ -96,6 +114,19 @@ class _TakePhotoScreenState extends State<TakePhotoScreen> {
   }
 
   Future<void> _takePicture() async {
+    if (_controller.value.isTakingPicture || !_controller.value.isInitialized) {
+      // 既に撮影中か、カメラが初期化されていない場合は何もしない
+      return;
+    }
+
+    // ⭐ 視覚的フィードバック: ボタンアニメーション開始
+    _shutterButtonAnimationController.forward().then((_) {
+      _shutterButtonAnimationController.reverse();
+    });
+
+    // ⭐ 触覚フィードバック: デバイスを振動させる
+    HapticFeedback.lightImpact(); // 軽く振動
+
     try {
       await _initializeControllerFuture;
 
@@ -128,6 +159,8 @@ class _TakePhotoScreenState extends State<TakePhotoScreen> {
       );
     } catch (e) {
       debugPrint('Error taking picture: $e');
+      // エラーが発生した場合もアニメーションをリセットする
+      _shutterButtonAnimationController.reset();
     }
   }
 
@@ -176,20 +209,25 @@ class _TakePhotoScreenState extends State<TakePhotoScreen> {
                   bottom: 150,
                   left: 0,
                   right: 0,
-                  child:
-                  // 撮影ボタン
-                  GestureDetector(
-                    onTap: _takePicture,
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.photo_camera,
-                        size: 48,
-                        color: Colors.green,
+                  child: Center(
+                    // Centerウィジェットを追加してボタンを中央に配置
+                    // ⭐ ScaleTransition でボタンの拡大縮小アニメーションを適用
+                    child: ScaleTransition(
+                      scale: _shutterButtonScaleAnimation,
+                      child: GestureDetector(
+                        onTap: _takePicture,
+                        child: Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: const BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.photo_camera,
+                            size: 48,
+                            color: Colors.green,
+                          ),
+                        ),
                       ),
                     ),
                   ),

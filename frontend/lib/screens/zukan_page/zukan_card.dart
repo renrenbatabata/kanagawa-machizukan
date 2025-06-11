@@ -229,44 +229,44 @@ class _ZukanCardState extends State<ZukanCard> {
           // カード内の要素を横並びにする
           children: [
             // 画像表示部分のコンテナ
-            // Container(
-            //   width: 90, // 幅
-            //   height: 90, // 高さ
-            //   decoration: BoxDecoration(
-            //     color: Colors.grey[200], // 背景色
-            //     borderRadius: BorderRadius.circular(10.0), // 角を丸くする
-            //   ),
-            //   child:
-            //       widget.item.rawImageData != null
-            //           // rawImageData が存在する場合、Base64画像をデコードして表示
-            //           ? ClipRRect(
-            //             borderRadius: BorderRadius.circular(10.0),
-            //             child: Image.memory(
-            //               base64Decode(
-            //                 _stripBase64Prefix(widget.item.rawImageData!),
-            //               ),
-            //               fit: BoxFit.cover, // 画像のフィット方法
-            //               // 画像の読み込みに失敗した場合のエラーハンドリング
-            //               errorBuilder: (context, error, stackTrace) {
-            //                 print('Error loading image from Base64: $error');
-            //                 return const Icon(
-            //                   Icons.broken_image, // エラーアイコンを表示
-            //                   size: 50,
-            //                   color: Colors.grey,
-            //                 );
-            //               },
-            //             ),
-            //           )
-            //           // rawImageData が存在しない場合、代替アイコンを表示
-            //           : Center(
-            //             child: Icon(
-            //               Icons.image_not_supported, // 画像なしアイコンを表示
-            //               size: 50,
-            //               color: Colors.grey[600],
-            //             ),
-            //           ),
-            // ),
-            // const SizedBox(width: 15.0), // 画像とテキストの間のスペース
+            Container(
+              width: 90, // 幅
+              height: 90, // 高さ
+              decoration: BoxDecoration(
+                color: Colors.grey[200], // 背景色
+                borderRadius: BorderRadius.circular(10.0), // 角を丸くする
+              ),
+              child:
+                  widget.item.rawImageData != null
+                      // rawImageData が存在する場合、Base64画像をデコードして表示
+                      ? ClipRRect(
+                        borderRadius: BorderRadius.circular(10.0),
+                        child: Image.memory(
+                          base64Decode(
+                            _stripBase64Prefix(widget.item.rawImageData!),
+                          ),
+                          fit: BoxFit.cover, // 画像のフィット方法
+                          // 画像の読み込みに失敗した場合のエラーハンドリング
+                          errorBuilder: (context, error, stackTrace) {
+                            print('Error loading image from Base64: $error');
+                            return const Icon(
+                              Icons.broken_image, // エラーアイコンを表示
+                              size: 50,
+                              color: Colors.grey,
+                            );
+                          },
+                        ),
+                      )
+                      // rawImageData が存在しない場合、代替アイコンを表示
+                      : Center(
+                        child: Icon(
+                          Icons.image_not_supported, // 画像なしアイコンを表示
+                          size: 50,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+            ),
+            const SizedBox(width: 15.0), // 画像とテキストの間のスペース
             // 情報表示部分（アイテム名、発見日、場所）
             Expanded(
               child: Column(
