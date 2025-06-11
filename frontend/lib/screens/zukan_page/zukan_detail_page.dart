@@ -1,31 +1,96 @@
-import 'dart:io'; // Fileクラスを使用するために必要
+import 'dart:convert'; // base64Decodeを使うために必要
+import 'dart:typed_data'; // Uint8Listを使うために必要
 import 'package:flutter/material.dart';
 import 'package:frontend/widgets/back_button.dart';
 import 'package:frontend/widgets/header.dart'; // ImageHeaderをインポート
 import 'package:frontend/widgets/control.dart'; // Controlをインポート
 import 'package:frontend/widgets/colors.dart'; // AppColorsをインポート
+// 以下のインポートはZukanDetailPageでは不要なので削除します
+// import 'package:flutter_dotenv/flutter_dotenv.dart';
+// import 'package:http/http.dart' as http;
 
 class ZukanDetailPage extends StatelessWidget {
   final Map<String, dynamic> details;
-  final String? capturedImagePath; // 新しく追加：発見時の撮影画像パス (FilePath)
+  // capturedImagePath はZukanCardでBase64データURL（例: 'data:image/jpeg;base64,...'）形式で渡されることを想定
+  final String? capturedImagePath;
 
   const ZukanDetailPage({
+    // コンストラクタをconstに修正
     Key? key,
     required this.details,
     this.capturedImagePath, // オプショナル引数として追加
   }) : super(key: key);
 
+  // --- ヘルパー関数 ---
+
+  // Base64データのプレフィックスを除去する関数
+  String _stripBase64Prefix(String base64String) {
+    final regex = RegExp(r'data:image/[^;]+;base64,');
+    return base64String.replaceFirst(regex, '');
+  }
+
+  // Base64データURLをUint8Listにデコードするヘルパー関数
+  Uint8List? _decodeBase64Image(String? base64DataUrl) {
+    if (base64DataUrl == null || base64DataUrl.isEmpty) {
+      return null;
+    }
+    try {
+      final String strippedBase64 = _stripBase64Prefix(base64DataUrl);
+      return base64Decode(strippedBase64);
+    } catch (e) {
+      print('Base64画像のデコードエラー: $e');
+      return null;
+    }
+  }
+
+  // 日付文字列をYYYY年MM月DD日形式に整形するヘルパー関数
+  String _formatDateString(String? dateString) {
+    if (dateString == null || dateString.isEmpty) {
+      return '不明'; // 文字列がnullまたは空の場合は'不明'を返す
+    }
+    try {
+      // "2025-06-04T00:00" の形式をDateTimeオブジェクトにパース
+      final dateTime = DateTime.parse(dateString);
+
+      // 年、月、日を取得し、2桁にゼロ埋め
+      final year = dateTime.year.toString();
+      final month = dateTime.month.toString().padLeft(2, '0');
+      final day = dateTime.day.toString().padLeft(2, '0');
+
+      return '${year}年${month}月${day}日'; //YYYY年MM月DD日形式で返す
+    } catch (e) {
+      print('日付の整形エラー: $e, データ: $dateString');
+      return '不正な日付'; // 変換中にエラーが発生した場合は'不正な日付'を返す
+    }
+  }
+
+  // --- /ヘルパー関数 ---
+
   @override
   Widget build(BuildContext context) {
-    // 詳細情報から名前、読み仮名、説明、画像URL、場所を取得
-    final String name = details['name'] ?? '名称不明';
-    final String hiraganaName =
-        details['hiraganaName'] ?? ''; // 仮の読み仮名、バックエンドから取得想定
+    // 詳細情報から名前、読み仮名、説明、場所、発見日を取得
+    // itemId はこのページで直接APIを叩かないため、ここでは使用しません。
+    // final String itemId = details['id']?.toString() ?? '不明';
+    final String name = details['name'] ?? '名前がありません';
+    final String hiraganaName = details['hiraganaName'] ?? '';
     final String description = details['description'] ?? '詳しい説明はありません。';
-    // isDiscoveredはZukanItemから渡されるが、ZukanDetailPageでは常に発見済みとして扱う
-    final String? displayImageUrl = details['imageUrl']; // DBに登録された公式画像
-    final String discoveredDate = details['discoveredDate'] ?? ''; // 発見日 (あれば)
-    final String location = details['location'] ?? '場所不明'; // 場所 (あれば)
+
+    // ZukanCardから渡されるキーに合わせる
+    final String shootingDate = details['shootingDate'] ?? ''; // 発見日
+    final String address = details['address'] ?? '場所不明'; // 場所
+    final String? rawImageDataFromDetails =
+        details['rawImageData']; // ZukanItemのrawImageData
+
+    // 分類と花言葉をdetailsから取得
+    final String family = details['family'] ?? ''; // 科名
+    final String genius = details['genius'] ?? ''; // 属名
+    final String? meaning = details['meaning']; // 花言葉
+
+    // capturedImagePath があればそれを優先的にデコード
+    // なければ rawImageDataFromDetails をデコード
+    final Uint8List? imageBytesToDisplay =
+        _decodeBase64Image(capturedImagePath) ??
+        _decodeBase64Image(rawImageDataFromDetails);
 
     return Scaffold(
       backgroundColor: const Color(0xFFFFF6E5), // やさしいベージュ
@@ -84,7 +149,7 @@ class ZukanDetailPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 20),
 
-                  // 写真（発見時の写真があればそれを優先、なければ図鑑の公式画像）
+                  // 写真（表示する画像があればそれを表示、なければ代替アイコン）
                   Center(
                     child: Container(
                       width: 350,
@@ -106,21 +171,15 @@ class ZukanDetailPage extends StatelessWidget {
                       ),
                       clipBehavior: Clip.hardEdge, // 角丸に画像をクリップ
                       child:
-                          (capturedImagePath != null &&
-                                  File(capturedImagePath!).existsSync())
-                              ? Image.file(
-                                File(capturedImagePath!),
-                                fit: BoxFit.cover,
-                              )
-                              : (displayImageUrl != null &&
-                                  displayImageUrl.isNotEmpty)
-                              ? Image.asset(
-                                displayImageUrl,
+                          imageBytesToDisplay != null
+                              ? Image.memory(
+                                imageBytesToDisplay,
                                 fit: BoxFit.cover,
                                 errorBuilder: (context, error, stackTrace) {
+                                  print('Error loading image bytes: $error');
                                   return const Center(
                                     child: Icon(
-                                      Icons.image_not_supported,
+                                      Icons.broken_image,
                                       size: 80,
                                       color: Colors.grey,
                                     ),
@@ -138,9 +197,9 @@ class ZukanDetailPage extends StatelessWidget {
                   ),
 
                   const SizedBox(height: 16),
-                  if (discoveredDate.isNotEmpty)
+                  if (shootingDate.isNotEmpty)
                     Text(
-                      '発見日: $discoveredDate',
+                      '発見日: ${_formatDateString(shootingDate)}', // 日付を整形して表示
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                         fontSize: 16,
@@ -150,65 +209,66 @@ class ZukanDetailPage extends StatelessWidget {
                   const SizedBox(height: 24),
 
                   // 「きほんデータ」セクション
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20.0,
-                    ), // 全体のパディングを調整
+                  Container(
+                    width: double.infinity,
+                    margin: const EdgeInsets.symmetric(horizontal: 16),
+                    padding: const EdgeInsets.all(16),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start, // 左寄せにする
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // タイトル部分
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 25,
-                            vertical: 8,
-                          ),
-                          decoration: const BoxDecoration(
-                            color: AppColors.orange, // オレンジ
-                            borderRadius: BorderRadius.vertical(
-                              top: Radius.circular(12),
+                        Center(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 25,
+                              vertical: 8,
                             ),
-                          ),
-                          child: const Row(
-                            mainAxisSize: MainAxisSize.min, // コンテンツに合わせて幅を最小限に
-                            children: [
-                              Icon(
-                                Icons.description,
-                                color: Colors.white,
-                              ), // アイコンを変更
-                              SizedBox(width: 8), // アイコンとテキストの間隔を調整
-                              Text(
-                                "きほんデータ",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 20,
-                                ),
+                            decoration: const BoxDecoration(
+                              color: Colors.orange,
+                              borderRadius: BorderRadius.vertical(
+                                top: Radius.circular(12),
                               ),
-                            ],
+                            ),
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.search, color: Colors.white),
+                                SizedBox(width: 4),
+                                Text(
+                                  "きほんデータ",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 20,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
-                        // データ表示部分
                         Container(
-                          width: double.infinity,
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            borderRadius: const BorderRadius.only(
-                              bottomLeft: Radius.circular(12), // 下側を丸くする
-                              bottomRight: Radius.circular(12), // 下側を丸くする
-                              topRight: Radius.circular(12),
-                            ),
-                            color: AppColors.orangeSub.withOpacity(
-                              0.5,
-                            ), // 半透明の薄いオレンジ
-                            border: Border.all(
-                              color: AppColors.orange,
-                              width: 2,
-                            ),
+                            borderRadius: BorderRadius.circular(12),
+                            color: const Color.fromARGB(161, 251, 215, 148),
+                            border: Border.all(color: Colors.orange, width: 2),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
+                              // ⭐ 分類（科・属）を表示
+                              if (family.isNotEmpty || genius.isNotEmpty)
+                                Text(
+                                  "分類 : $family ${genius.isNotEmpty ? genius : ''}", // 属があれば表示
+                                  style: const TextStyle(fontSize: 20),
+                                ),
+                              const SizedBox(height: 8),
+                              // ⭐ 花言葉を表示
+                              if (meaning != null && meaning.isNotEmpty)
+                                Text(
+                                  "花言葉 :$meaning",
+                                  style: const TextStyle(fontSize: 20),
+                                ),
+                              const SizedBox(height: 10),
                               Text(
                                 description,
                                 style: const TextStyle(
@@ -217,17 +277,17 @@ class ZukanDetailPage extends StatelessWidget {
                                   color: Colors.black87,
                                 ),
                               ),
-                              if (location.isNotEmpty) ...[
-                                const SizedBox(height: 10),
-                                Text(
-                                  '場所: $location',
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.black54,
+                              if (address.isNotEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 10.0),
+                                  child: Text(
+                                    "場所: $address",
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.black54,
+                                    ),
                                   ),
                                 ),
-                              ],
-                              // ここに関連情報、アクセス、イベントなどを追加
                             ],
                           ),
                         ),

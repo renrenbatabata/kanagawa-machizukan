@@ -101,7 +101,7 @@ class _ZukanState extends State<Zukan> {
         apiCategory = "shrine"; // バックエンドのカテゴリ名
         break;
       case "かめ太郎":
-        apiCategory = "kame"; // バックエンドのカテゴリ名（例として"kame"としました）
+        apiCategory = "turtle"; // バックエンドのカテゴリ名
         break;
       default:
         apiCategory = "all"; // 想定外のカテゴリの場合のデフォルト

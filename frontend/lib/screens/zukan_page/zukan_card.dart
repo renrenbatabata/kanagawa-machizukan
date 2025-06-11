@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart'; // FlutterのUIコンポーネントを使用するために必要
 import 'package:frontend/screens/zukan_page/zukan_detail_page.dart'; // 図鑑の詳細ページへ遷移するためにインポート
-import 'dart:convert'; // Base64エンコードのために追加
+import 'dart:convert'; // Base64エンコードとJSONデコードのために必要
 import 'package:http/http.dart' as http; // httpパッケージをインポート
 import 'package:flutter_dotenv/flutter_dotenv.dart'; // .envファイルから環境変数を読み込むため
-import 'package:frontend/screens/auth_page/auth_service.dart'; // AuthServiceをインポート
 
 // ZukanItem クラス
 // 図鑑アイテムのデータを保持するためのモデルクラスです。
@@ -11,8 +10,8 @@ class ZukanItem {
   final int id; // アイテムの一意なID
   final String category; // アイテムのカテゴリ（例: 'flower', 'insect'）
   final String name; // アイテムの名前
-  final String? shootingLocation; // 場所
-  final String? shootingDate; // ⭐ 修正: 発見日時をString?に戻す
+  final String? address; // 場所
+  final String? shootingDate; // 発見日時
   final String? rawImageData; // Base64エンコードされた画像データ
 
   // コンストラクタ
@@ -20,7 +19,7 @@ class ZukanItem {
     required this.id,
     required this.category,
     required this.name,
-    this.shootingLocation,
+    this.address,
     this.rawImageData,
     this.shootingDate,
   });
@@ -31,9 +30,9 @@ class ZukanItem {
       id: json['id'] as int,
       category: json['category'] as String,
       name: json['name'] as String,
-      shootingLocation: json['shootingLocation'] as String?,
+      address: json['address'] as String?,
       rawImageData: json['imageData'] as String?,
-      shootingDate: json['shootingDate'] as String?, // ⭐ 修正: String?として受け取る
+      shootingDate: json['shootingDate'] as String?,
     );
   }
 }
@@ -59,7 +58,7 @@ class _ZukanCardState extends State<ZukanCard> {
     return base64String.replaceFirst(regex, '');
   }
 
-  // ⭐ 新規追加: 日付文字列をYYYY年MM月DD日形式に整形するヘルパー関数
+  // 日付文字列をYYYY年MM月DD日形式に整形するヘルパー関数
   String _formatDateString(String? dateString) {
     if (dateString == null || dateString.isEmpty) {
       return '不明'; // 文字列がnullまたは空の場合は'不明'を返す
@@ -73,7 +72,7 @@ class _ZukanCardState extends State<ZukanCard> {
       final month = dateTime.month.toString().padLeft(2, '0');
       final day = dateTime.day.toString().padLeft(2, '0');
 
-      return '${year}年${month}月${day}日'; // YYYY年MM月DD日形式で返す
+      return '${year}年${month}月${day}日'; //YYYY年MM月DD日形式で返す
     } catch (e) {
       print('日付の整形エラー: $e, データ: $dateString');
       return '不正な日付'; // 変換中にエラーが発生した場合は'不正な日付'を返す
@@ -87,8 +86,8 @@ class _ZukanCardState extends State<ZukanCard> {
     print('--- ZukanCard Debug - Item ID: ${widget.item.id} ---');
     print('   Category: ${widget.item.category}');
     print('   Name: ${widget.item.name}');
-    print('   Discovered Date: ${widget.item.shootingDate}'); // ここはまだ未整形文字列のまま
-    print('   Shooting Location: ${widget.item.shootingLocation}');
+    print('   Discovered Date: ${widget.item.shootingDate}');
+    print('   Shooting Location: ${widget.item.address}');
     print('   Raw Image Data (present): ${widget.item.rawImageData != null}');
     if (widget.item.rawImageData != null) {
       print(
@@ -98,57 +97,110 @@ class _ZukanCardState extends State<ZukanCard> {
     print('--- End ZukanCard Debug ---');
   }
 
-  // 特定の図鑑アイテムの詳細データをサーバーから非同期で取得する関数です。
+  // ⭐ APIを叩いて詳細データを取得する関数です ⭐
   Future<Map<String, dynamic>> _fetchDetails(int itemId) async {
     final baseUrl = dotenv.env['BASE_API_URL']; // .envファイルからAPIのベースURLを取得
-    final userId = AuthService().currentUserId; // 認証サービスから現在のユーザーIDを取得
+    // final userId = AuthService().currentUserId; // 認証サービスから現在のユーザーIDを取得 (必要に応じて利用)
 
-    // 環境変数またはユーザーIDが取得できない場合のエラーハンドリング
     if (baseUrl == null) {
       print('❌ エラー: BASE_API_URLが設定されていません。');
-      return {'error': '設定エラー'};
+      return {'error': '設定エラー: BASE_API_URLがありません'};
     }
-    if (userId == null) {
-      print('❌ エラー: ユーザーIDが取得できません。詳細の取得にはログインが必要です。');
-      return {'error': '未ログイン'};
-    }
+    // userIdが詳細取得に必須で、取得できない場合のエラーハンドリング
+    // if (userId == null) {
+    //   print('❌ エラー: ユーザーIDが取得できません。詳細の取得にはログインが必要です。');
+    //   return {'error': '未ログイン'};
+    // }
 
     // APIリクエストのURIを構築
-    final uri = Uri.parse('$baseUrl/zukan/item/details').replace(
-      queryParameters: {
-        'userId': userId, // ユーザーIDをクエリパラメータとして追加
-        'itemId': itemId.toString(), // intをStringに変換して送信
-      },
-    );
+    // エンドポイントは "/pictures/{id}" の形式を想定します
+    final uri = Uri.parse('$baseUrl/pictures').replace(
+      queryParameters: {'id': itemId.toString()},
+    ); // 例: GET /pictures/123
+
+    // もしユーザーIDをクエリパラメータで渡す必要があれば
+    // final uri = Uri.parse('$baseUrl/pictures').replace(queryParameters: {
+    //   'id': itemId.toString(),
+    //   'userId': userId,
+    // });
+
+    print('APIへのリクエストURL (詳細取得): $uri'); // デバッグ用にリクエストURLを出力
 
     try {
-      // HTTP POSTリクエストを送信 (APIの仕様に合わせてGET/POSTを調整してください)
-      final response = await http.post(uri);
+      // HTTP GETリクエストを送信 (詳細取得にはGETが一般的です)
+      final response = await http.post(uri); // ⭐ ここでAPIを叩いています！
+
+      print('--- API Response Debug (ZukanCardState -> _fetchDetails) ---');
+      print('URL: $uri');
+      print('Status Code: ${response.statusCode}');
+      print('Response Body: ${utf8.decode(response.bodyBytes)}'); // 日本語文字化け対策
+      print('--- End API Response Debug ---');
 
       if (response.statusCode == 200) {
-        // ステータスコードが200（成功）の場合、レスポンスボディをJSONとしてデコード
-        // レスポンスがリスト形式で返ってくることを想定して、リストとしてデコード
-        final List<dynamic> jsonResponseList = json.decode(response.body);
+        final dynamic decodedBody = json.decode(
+          utf8.decode(response.bodyBytes),
+        );
 
-        if (jsonResponseList.isNotEmpty) {
-          // リストが空でない場合、最初の要素をMapとして取得し、返却
-          final Map<String, dynamic> result =
-              jsonResponseList.first as Map<String, dynamic>;
-          print('✅ 詳細データ取得成功: $result');
-          return result;
+        // APIレスポンスの構造に合わせて、flowersInfoを取り出す
+        Map<String, dynamic> rawResult;
+        if (decodedBody is List && decodedBody.isNotEmpty) {
+          rawResult = decodedBody.first as Map<String, dynamic>;
+        } else if (decodedBody is Map<String, dynamic>) {
+          rawResult = decodedBody;
         } else {
-          // リストが空の場合の処理
-          print('⚠️ 詳細データが空のリストで返されました。');
-          return {'error': '詳細データが見つかりません。'};
+          print('⚠️ 詳細データが空または予期しない形式で返されました。');
+          return {
+            'error': '詳細データが見つからないか、形式が不正です。',
+            'body': utf8.decode(response.bodyBytes),
+          };
+        }
+
+        final Map<String, dynamic>? flowersInfo = rawResult['flowersInfo'];
+
+        if (flowersInfo != null) {
+          // ZukanDetailPageが期待するキー名にマッピング
+          final Map<String, dynamic> mappedDetails = {
+            'id': rawResult['id'] ?? itemId, // APIレスポンスのID、なければZukanItemのID
+            'name':
+                flowersInfo['name_jp'] ??
+                rawResult['name'] ??
+                '名前がありません', // flowersInfo優先、なければZukanItemのname
+            'hiraganaName': flowersInfo['hiraganaName'] ?? '', // APIレスポンスから取得
+            'description':
+                flowersInfo['description'] ?? '詳しい説明はありません。', // APIレスポンスから取得
+            'family': flowersInfo['family'] ?? '', // ⭐ APIから取得
+            'genius': flowersInfo['genius'] ?? '', // ⭐ APIから取得
+            'meaning': flowersInfo['meaning'], // ⭐ APIから取得
+            'shootingDate':
+                rawResult['shootingDate'] ??
+                widget.item.shootingDate, // APIレスポンス優先、なければZukanItem
+            'address':
+                rawResult['address'] ??
+                widget.item.address, // APIレスポンス優先、なければZukanItem
+            'rawImageData':
+                rawResult['imageData'] ??
+                widget.item.rawImageData, // APIレスポンス優先、なければZukanItem
+            // 他に必要なデータがあれば追加
+          };
+          print('✅ 詳細データ取得成功とマッピング済み: $mappedDetails');
+          return mappedDetails;
+        } else {
+          print('⚠️ flowersInfo がレスポンスに含まれていませんでした。');
+          return {
+            'error': 'flowersInfo がレスポンスに含まれていません。',
+            'body': utf8.decode(response.bodyBytes),
+          };
         }
       } else {
-        // サーバーエラーの場合の処理
         print('❌ 詳細取得サーバーエラー: ${response.statusCode}');
-        print('エラーレスポンスボディ (詳細): ${response.body}');
-        return {'error': 'サーバーエラー', 'statusCode': response.statusCode};
+        print('エラーレスポンスボディ (詳細): ${utf8.decode(response.bodyBytes)}');
+        return {
+          'error': 'サーバーエラー',
+          'statusCode': response.statusCode,
+          'body': utf8.decode(response.bodyBytes),
+        };
       }
     } catch (e) {
-      // 通信エラー（ネットワーク接続など）の場合の処理
       print('❌ 詳細取得通信エラー: $e');
       return {'error': '通信エラー', 'exception': e.toString()};
     }
@@ -157,14 +209,15 @@ class _ZukanCardState extends State<ZukanCard> {
   // 詳細ページを表示するための関数です。
   // サーバーから取得した詳細データを受け取り、ZukanDetailPageへ遷移します。
   void _showDetailsPage(BuildContext context, Map<String, dynamic> details) {
-    // 取得したデータにエラーが含まれている場合、エラーダイアログを表示
     if (details.containsKey('error')) {
       showDialog(
         context: context,
         builder:
             (_) => AlertDialog(
               title: const Text("エラー"),
-              content: Text("詳細情報の取得に失敗しました: ${details['error']}"),
+              content: Text(
+                "詳細情報の取得に失敗しました: ${details['error']}\n${details['body'] ?? ''}",
+              ),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
@@ -176,22 +229,20 @@ class _ZukanCardState extends State<ZukanCard> {
       return;
     }
 
-    // エラーがなければ、ZukanDetailPageへ遷移
+    // ZukanDetailPageへ遷移
     Navigator.push(
       context,
       MaterialPageRoute(
         builder:
             (context) => ZukanDetailPage(
-              details: details, // 取得した詳細データを渡す
-              // Base64画像データが存在する場合、プレフィックスを付けて渡す
+              details: details, // 取得した詳細データをそのまま渡す
+              // capturedImagePathはdetailsマップのrawImageDataからBase64形式で渡す
               capturedImagePath:
                   details['rawImageData'] != null
                       ? 'data:image/jpeg;base64,${_stripBase64Prefix(details['rawImageData'] as String)}'
                       : null,
             ),
       ),
-      // capturedImagePath は ZukanCard から ZukanDetailPage へ画像データを渡すために使用されます。
-      // ZukanDetailPage でこのパスを使って画像を表示します。
     );
   }
 
@@ -200,9 +251,20 @@ class _ZukanCardState extends State<ZukanCard> {
     return GestureDetector(
       // カードがタップされた際の処理
       onTap: () async {
-        // 常に詳細データを非同期で取得し、詳細ページを表示します。
-        final details = await _fetchDetails(widget.item.id);
-        _showDetailsPage(context, details);
+        // カードのカテゴリが'flower'の場合のみ詳細データを取得し、詳細ページに遷移
+        if (widget.item.category == 'flower') {
+          // ⭐ ここでカテゴリをチェック
+          final details = await _fetchDetails(widget.item.id);
+          _showDetailsPage(context, details);
+        } else {
+          // 'flower'以外のカテゴリの場合、例えばトースト表示や別の処理を行う
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('この図鑑アイテムの詳細は現在準備中です。'),
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
       },
       child: Container(
         // カード全体のコンテナ
@@ -213,7 +275,7 @@ class _ZukanCardState extends State<ZukanCard> {
           horizontal: 10.0,
         ), // 外側のマージン
         decoration: BoxDecoration(
-          color: widget.cardColor, // カードの背景色
+          color: const Color.fromARGB(235, 255, 255, 255), // カードの背景色
           borderRadius: BorderRadius.circular(15.0), // 角を丸くする
           boxShadow: [
             // カードの影
@@ -275,20 +337,19 @@ class _ZukanCardState extends State<ZukanCard> {
                   Text(
                     widget.item.name, // アイテム名を表示
                     style: const TextStyle(
-                      fontSize: 18,
+                      fontSize: 20,
                       fontWeight: FontWeight.bold,
                       color: Colors.black87,
                     ),
                   ),
                   const SizedBox(height: 5.0), // アイテム名と発見日の間のスペース
                   Text(
-                    // ⭐ 修正: _formatDateString関数を使って日付を整形して表示
-                    '発見日: ${_formatDateString(widget.item.shootingDate)}',
-                    style: const TextStyle(fontSize: 14, color: Colors.black54),
+                    '発見日: ${_formatDateString(widget.item.shootingDate)}', // 日付を整形して表示
+                    style: const TextStyle(fontSize: 16, color: Colors.black54),
                   ),
                   Text(
-                    '場所: ${widget.item.shootingLocation ?? '不明'}', // 発見場所を表示（データがない場合は'不明'）
-                    style: const TextStyle(fontSize: 14, color: Colors.black54),
+                    '場所: ${widget.item.address ?? '不明'}', // 発見場所を表示（データがない場合は'不明'）
+                    style: const TextStyle(fontSize: 16, color: Colors.black54),
                   ),
                 ],
               ),
