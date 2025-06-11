@@ -30,17 +30,15 @@ public class LogService {
             System.out.println("=============================================");
             System.out.println("Name:" + imageDetailDto.getName());
             System.out.println("Category:" + imageDetailDto.getCategory());
-            //System.out.println("ShootingDate:" + imageDetailDto.getShootingDate());
-            System.out.println("ShootingLocation:" + imageDetailDto.getShootingLocation());
-           // System.out.println("ImageData:" + Arrays.toString(imageDetailDto.getImageData()));
+            System.out.println("ShootingDate:" + imageDetailDto.getShootingDate());
+            System.out.println("ImageData:" + imageDetailDto.getImageData());
         }
     }
     public void imageDetailLog(ImageDetailDto dto){
             System.out.println("=============================================");
             System.out.println("Name:" + dto.getName());
             System.out.println("Category:" + dto.getCategory());
-            //System.out.println("ShootingDate:" + dto.getShootingDate());
-            System.out.println("ShootingLocation:" + dto.getShootingLocation());
+
 
     }
 

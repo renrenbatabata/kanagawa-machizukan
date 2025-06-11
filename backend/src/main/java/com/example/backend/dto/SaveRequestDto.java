@@ -10,4 +10,5 @@ public class SaveRequestDto {
     private String category;
     private String userId;
     private MultipartFile file;
+    private String address;
 }

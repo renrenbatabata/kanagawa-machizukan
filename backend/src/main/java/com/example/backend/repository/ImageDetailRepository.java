@@ -13,4 +13,5 @@ public interface ImageDetailRepository extends JpaRepository<ImageDetailEntity, 
 
     List<ImageDetailEntity> findByCategoryAndUserIdAndName(String category, String userId, String name);
 
+    List<ImageDetailEntity> findByUserId(String userId);
 }

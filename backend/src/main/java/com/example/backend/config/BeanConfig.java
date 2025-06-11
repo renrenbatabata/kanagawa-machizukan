@@ -17,15 +17,15 @@ public class BeanConfig {
         return new RestTemplate();
     }
 
-    @Bean
-    public ObjectMapper mapper(){
-        return new ObjectMapper();
-    }
+//    @Bean
+//    public ObjectMapper mapper(){
+//        return new ObjectMapper();
+//    }
 
-    @Bean
-    public DozerBeanMapper dozerMapper() {
-        return (DozerBeanMapper) DozerBeanMapperBuilder.buildDefault();
-    }
+//    @Bean
+//    public DozerBeanMapper dozerMapper() {
+//        return (DozerBeanMapper) DozerBeanMapperBuilder.buildDefault();
+//    }
 
 }
 

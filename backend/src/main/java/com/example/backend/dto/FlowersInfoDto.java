@@ -17,4 +17,5 @@ public class FlowersInfoDto{
     private String genius;//〇目
     private String meaning;//花言葉
     private String description;//説明
+    private String uuid;
 }
