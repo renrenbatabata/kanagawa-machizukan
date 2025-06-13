@@ -28,6 +28,7 @@ class ResultPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final String today = DateFormat('yyyy年M月d日').format(DateTime.now());
+    print(uuid);
 
     return Scaffold(
       backgroundColor: const Color(0xFFFFF6E5), // やさしいベージュ

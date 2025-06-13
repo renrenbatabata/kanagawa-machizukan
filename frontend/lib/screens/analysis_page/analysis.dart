@@ -254,18 +254,24 @@ class PicturePreviewScreen extends StatelessWidget {
                           ),
                         );
                       } else if (category == 'shrine' || category == 'turtle') {
-                        final name = result['name'] ?? '新発見！！';
-                        final hiraganaName = result['hiraganaName'] ?? "　　　";
+                        final shrineInfo =
+                            result['shrineInfo'] ?? result['turtleInfo'];
+
+                        final name = shrineInfo['name'] ?? '新発見！！';
+                        final hiraganaName =
+                            shrineInfo['hiraganaName'] ?? "　　　";
                         final description =
-                            result['description'] ?? 'くわしい情報は見つかりませんでした';
+                            shrineInfo['features'] ?? 'くわしい情報は見つかりませんでした';
                         final latitude =
-                            result['latitude'] != null
-                                ? double.tryParse(result['latitude'].toString())
+                            shrineInfo['latitude'] != null
+                                ? double.tryParse(
+                                  shrineInfo['latitude'].toString(),
+                                )
                                 : null;
                         final longitude =
-                            result['longitude'] != null
+                            shrineInfo['longitude'] != null
                                 ? double.tryParse(
-                                  result['longitude'].toString(),
+                                  shrineInfo['longitude'].toString(),
                                 )
                                 : null;
 
