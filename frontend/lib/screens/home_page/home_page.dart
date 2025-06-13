@@ -6,6 +6,7 @@ import 'package:frontend/widgets/control.dart';
 import 'package:frontend/screens/home_page/kanagawa_love_area.dart';
 import 'package:frontend/screens/home_page/daily_quiz_card.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:frontend/widgets/x_official_notice_screen.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -28,6 +29,9 @@ class HomePage extends StatelessWidget {
                 children: [
                   const SizedBox(height: 16),
                   const DailyQuizCard(),
+                  const SizedBox(height: 16),
+                  // ここにSizedBoxを追加して高さを指定
+                  SizedBox(height: 750, child: const XOfficialNoticeScreen()),
                   const SizedBox(height: 16),
 
                   const KanagawaLoveArea(),
