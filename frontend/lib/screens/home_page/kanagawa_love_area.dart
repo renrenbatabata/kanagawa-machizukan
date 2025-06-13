@@ -42,7 +42,7 @@ class _KanagawaLoveAreaState extends State<KanagawaLoveArea> {
       backendCategoryType: 'turtle', // バックエンドのカテゴリ名
     ),
     LoveCategoryConfig(
-      label: 'じんじゃ',
+      label: 'れきし',
       icon: Icons.temple_hindu,
       color: AppColors.red,
       subColor: AppColors.redSub,

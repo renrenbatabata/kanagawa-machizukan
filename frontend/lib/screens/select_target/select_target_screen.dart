@@ -58,7 +58,7 @@ class SelectTargetScreen extends StatelessWidget {
                     const SizedBox(height: 35),
                     _TargetButton(
                       icon: Icons.temple_buddhist,
-                      label: 'じんじゃ',
+                      label: 'れきし',
                       color: Colors.redAccent,
                       onTap: () {
                         Navigator.push(

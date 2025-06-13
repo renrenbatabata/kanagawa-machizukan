@@ -38,7 +38,7 @@ class _ZukanState extends State<Zukan> {
   final Map<String, Map<String, Color>> categoryColors = {
     "すべて": {"main": AppColors.orange, "sub": AppColors.orangeSub},
     "おはな": {"main": AppColors.pink, "sub": AppColors.pinkSub},
-    "じんじゃ": {"main": AppColors.red, "sub": AppColors.redSub},
+    "れきし": {"main": AppColors.red, "sub": AppColors.redSub},
     "かめ太郎": {"main": AppColors.blue, "sub": AppColors.blueSub},
   };
 
