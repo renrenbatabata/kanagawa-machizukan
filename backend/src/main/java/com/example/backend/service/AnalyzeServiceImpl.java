@@ -3,6 +3,7 @@ package com.example.backend.service;
 import com.example.backend.config.ValueConfig;
 import com.example.backend.dto.AnalyzeResponseDto;
 import com.example.backend.dto.ShrineAnalyzeResponceDto;
+import com.example.backend.repository.FlowersRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,9 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
+
+//import static jdk.internal.org.jline.reader.impl.LineReaderImpl.CompletionType.List;
 
 @RequiredArgsConstructor
 @Service
@@ -23,6 +27,7 @@ public class AnalyzeServiceImpl implements AnalyzeService {
     private final RestTemplate restTemplate;
     private final ValueConfig valueConfig;
     private final ObjectMapper objectMapper;
+    private final FlowersRepository flowersRepository;
 
     @Override
     public String analyzeImage(MultipartFile file, String category, String latitude, String longitude) {
@@ -42,6 +47,10 @@ public class AnalyzeServiceImpl implements AnalyzeService {
             body.add("category", category);
             body.add("latitude", latitude);
             body.add("longitude", longitude);
+            if (category.equals("flower")) {
+                List<String> flowersList = flowersRepository.getAllNameEn();
+                body.add("flowersList",flowersList);
+            }
 
             // ヘッダーの設定
             HttpHeaders headers = new HttpHeaders();
@@ -63,11 +72,10 @@ public class AnalyzeServiceImpl implements AnalyzeService {
     @Override
     public AnalyzeResponseDto getFlowerAnalysis(MultipartFile file, String latitude, String longitude) {
         String responseBody = analyzeImage(file, "flower", latitude, longitude);
-        try {
-            return objectMapper.readValue(responseBody, AnalyzeResponseDto.class);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException("Error parsing response as AnalyzeResponseDto", e);
-        }
+        //return objectMapper.readValue(responseBody, AnalyzeResponseDto.class);
+        var dto = new AnalyzeResponseDto();
+        dto.setName_en(responseBody);
+        return dto;
     }
 
     @Override

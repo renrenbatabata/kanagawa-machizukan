@@ -1,7 +1,12 @@
 package com.example.backend.service;
 
 import com.example.backend.dto.*;
+import com.example.backend.dto.top.CountInfo;
+import com.example.backend.dto.top.FlowerCountInfo;
+import com.example.backend.dto.top.ShrineCountInfo;
+import com.example.backend.dto.top.TopInfoDto;
 import com.example.backend.repository.ImageDetailRepository;
+import com.example.backend.repository.TempDetailsRepository;
 import com.github.dozermapper.core.DozerBeanMapper;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,7 +22,8 @@ public class MainService {
 
     private final DatabaseService databaseService;
     private final DozerBeanMapper mapper;
-    private final ImageDetailRepository imageDetailRepository;
+    private final TempDetailsRepository tempDetailsRepository;
+
 
     public FlowerItemReturnInfo flowerSetToTestDB(SaveRequestDto saveRequestDto) throws IOException {
         FlowersInfoDto flowersInfoDto = databaseService.flowerSetToTestDB(saveRequestDto);
@@ -44,12 +50,11 @@ public class MainService {
             imageDetailDto.setName(shrineInfoDto != null ? shrineInfoDto.getName() : saveRequestDto.getShrineAnalyzeResponceDto().getName());
         }
         ShrineItemReturnInfo returnInfo = new ShrineItemReturnInfo();
-        returnInfo.setUuid(UUID.randomUUID().toString());
+        returnInfo.setUuid(shrineInfoDto.getUuid());
         returnInfo.setShrineInfo(shrineInfoDto);
         imageDetailDto.setImageData(null);
         returnInfo.setImageDetail(imageDetailDto);
         returnInfo.setDate(LocalDate.now().toString());
-
         return returnInfo;
     }
 
@@ -61,17 +66,48 @@ public class MainService {
         return databaseService.getPicturesById(id);
     }
 
-    public boolean flowerSetToDB(String uuid){
-        return databaseService.flowerSetToDB(uuid);
+    public boolean SetToDB(String uuid){
+        return databaseService.setToDB(uuid);
     }
 
     public List<ImageDetailDto> getImagesByCategoryAndUser(String category,String userIdStr){
         List<ImageDetailDto> dtoList = databaseService.getImagesByCategoryAndUser(category, userIdStr);
-
         return dtoList;
     }
 
     public List<ShrineInfoDto> getShrineInfo() {
         return databaseService.getShrineInfo();
     }
+
+    public TopInfoDto topInfo(String userId) {
+        TopInfoDto topInfo = new TopInfoDto();
+        CountInfo countInfo = new CountInfo();
+
+        int flowerCountImage = databaseService.getCount("flower",userId);
+        int flowerAll = databaseService.getAll("flower");
+
+        FlowerCountInfo flowerCountInfo = new FlowerCountInfo();
+        flowerCountInfo.setCount(flowerCountImage);
+        flowerCountInfo.setAll(flowerAll);
+        countInfo.setFlower(flowerCountInfo);
+
+        int shrineCountImage = databaseService.getCount("shrine",userId);
+        int shrineAll = databaseService.getAll("shrine");
+
+        ShrineCountInfo shrineCountInfo = new ShrineCountInfo();
+        shrineCountInfo.setCount(shrineCountImage);
+        shrineCountInfo.setAll(shrineAll);
+        countInfo.setShrine(shrineCountInfo);
+
+        double countImage = flowerCountImage + shrineCountImage;
+        double countAll = flowerAll + shrineAll;
+
+        double percent = (countImage*100)/countAll;
+
+        countInfo.setPercent(percent);
+        topInfo.setQuiz(getAllQuiz());
+        topInfo.setCount(countInfo);
+        return topInfo;
+    }
+
 }

@@ -29,7 +29,8 @@ public class WebSecurityConfig {
                                 "/pictures",
                                 "/DBAdd",
                                 "/DBtest",
-                                "/shrineInfo"
+                                "/shrineInfo",
+                                "/top"
                         ).permitAll()
                         .anyRequest().authenticated()
                 );

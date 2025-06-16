@@ -6,6 +6,7 @@ import com.example.backend.dto.ImageDetailDto;
 import com.example.backend.dto.ShrineInfoDto;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 
@@ -48,5 +49,11 @@ public class LogService {
         System.out.println("hint:" + info.getHint());
         System.out.println("feature:" + info.getFeatures());
         System.out.println("error" + info.getError());
+    }
+
+    public void connectLog(String connectName) {
+        LocalDateTime time = LocalDateTime.now();
+        System.out.println(" ");
+        System.out.println("----" + time + "----接続完了:" + connectName + "----------------");
     }
 }

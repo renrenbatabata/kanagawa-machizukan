@@ -1,6 +1,7 @@
 package com.example.backend.controller;
 
 import com.example.backend.dto.*;
+import com.example.backend.dto.top.TopInfoDto;
 import com.example.backend.service.AnalyzeService;
 import com.example.backend.service.DatabaseService;
 import com.example.backend.service.LogService;
@@ -35,38 +36,38 @@ public class MainController {
                                                   @RequestParam("longitude") String longitude,
                                                   @RequestParam("address") String address
                                                   ) throws IOException {
-        connectLog("analyze");
+        logService.connectLog("analyze");
         SaveRequestDto saveRequestDto = new SaveRequestDto();
         saveRequestDto.setCategory(category);
         saveRequestDto.setUserId(userIdStr);
         saveRequestDto.setFile(file);
         saveRequestDto.setAddress(address);
+        saveRequestDto.setLatitude(latitude);
+        saveRequestDto.setLongitude(longitude);
 
-        ItemReturnInfo resultInfo = null; // 共通の戻り値型
+        ItemReturnInfo resultInfo = null;
 
         if ("flower".equals(category)) {
             AnalyzeResponseDto analyzeResponseDto = analyzeService.getFlowerAnalysis(file, latitude, longitude);
             if (analyzeResponseDto != null) {
                 saveRequestDto.setAnalyzeResponseDto(analyzeResponseDto);
-                // mainService.flowerSetToDB が FlowerReturnInfo を返すように変更を想定
                 resultInfo = mainService.flowerSetToTestDB(saveRequestDto);
-                System.out.println(resultInfo); // resultInfo を直接出力
+                System.out.println(resultInfo);
             }else{
                 return null;
             }
         } else if ("shrine".equals(category)) {
-            ShrineAnalyzeResponceDto shrineAnalyzeResponseDto = analyzeService.getShrineAnalysis(file, latitude, longitude);
-            saveRequestDto.setShrineAnalyzeResponceDto(shrineAnalyzeResponseDto);
             resultInfo = mainService.shrineSetToDB(saveRequestDto);
-            if (resultInfo != null) { // resultInfo がnullでないことを確認
-                logService.shrineLog((ShrineInfoDto) ((ShrineItemReturnInfo) resultInfo).getShrineInfo());
+
+            if (resultInfo != null) {
+                logService.shrineLog(((ShrineItemReturnInfo) resultInfo).getShrineInfo());
             }
         } else {
             System.err.println("Unsupported category: " + category);
-            return ResponseEntity.badRequest().build(); // 400 Bad Request を返す
+            return ResponseEntity.badRequest().build();
         }
         if (resultInfo != null) {
-            return ResponseEntity.ok(resultInfo); // 200 OK と共に結果を返す
+            return ResponseEntity.ok(resultInfo);
         } else {
             System.err.println("Analysis or Save operation returned null for category: " + category);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -76,7 +77,7 @@ public class MainController {
     @PostMapping(value = "/allPictures")
     public List<ImageDetailDto> returnPictures(@RequestParam("userId") String userIdStr,
                                                @RequestParam("category") String category) {
-        connectLog("allPictures/userId=" + userIdStr + "/category=" + category);
+        logService.connectLog("allPictures/userId=" + userIdStr + "/category=" + category);
         List<ImageDetailDto> imageDetailDto = mainService.getImagesByCategoryAndUser(category, userIdStr);
         logService.imageDetailListLog(imageDetailDto);
         return imageDetailDto;
@@ -84,13 +85,13 @@ public class MainController {
 
     @GetMapping("/shrineInfo")
     public List<ShrineInfoDto> getShrineInfo(){
-        connectLog("ShrineInfo");
+        logService.connectLog("ShrineInfo");
         return mainService.getShrineInfo();
     }
 
     @PostMapping(value = "/pictures")
     public ResponseEntity<ItemReturnInfo> getPicturesById(@RequestParam("id") Integer id) {
-        connectLog("getPicturesById|id=" + id);
+        logService.connectLog("getPicturesById|id=" + id);
         ItemReturnInfo info = databaseService.getPicturesById(id);
         if (info == null) {
             return ResponseEntity.notFound().build();
@@ -106,14 +107,13 @@ public class MainController {
                 System.out.println(shrineInfoDto);
             }
         }
-        logService.imageDetailLog(info.getImageDetail()); // imageDetail は共通なので直接アクセス
-        // 正常にデータが取得できた場合は 200 OK と共にデータを返す
+        logService.imageDetailLog(info.getImageDetail());
         return ResponseEntity.ok(info);
     }
 
     @GetMapping("/quiz")
     public List<QuizDto> quiz() {
-        connectLog("quiz");
+        logService.connectLog("quiz");
         System.out.println(databaseService.getAllQuiz());
         return mainService.getAllQuiz();
     }
@@ -121,8 +121,8 @@ public class MainController {
     @PostMapping("/DBAdd")
     public HttpEntity<String> DBAdd(@RequestBody Map<String, String> uuid) {
         String newUuid = uuid.get("uuid");
-        connectLog("DBAdd/uuid:" + uuid);
-        boolean DBCheck = mainService.flowerSetToDB(newUuid);//trueなら正常
+        logService.connectLog("DBAdd/uuid:" + uuid);
+        boolean DBCheck = mainService.SetToDB(newUuid);//trueなら正常
         if (DBCheck) {
             return ResponseEntity.ok("処理完了");
         }else{
@@ -130,23 +130,24 @@ public class MainController {
         }
     }
 
-    @GetMapping("/")
-    public String index() {
-        connectLog("Hello");
-        return "hello";
+    @PostMapping("/top")
+    public TopInfoDto top(@RequestParam("userId") String userId) {
+        logService.connectLog("top");
+        return mainService.topInfo(userId);
     }
 
-    public void connectLog(String connectName) {
-        LocalDateTime time = LocalDateTime.now();
-        System.out.println(" ");
-        System.out.println("----" + time + "----接続完了:" + connectName + "----------------");
+    //======{{{{TEST}}}}==========================================================
+    @GetMapping("/")
+    public String index() {
+        logService.connectLog("Hello");
+        return "hello";
     }
 
     @PostMapping("/DBtest")
     public HttpEntity<String> test(@RequestParam(value = "uuid", required = false) String uuid) {
-        connectLog("TEST");
+        logService.connectLog("TEST");
         System.out.println("uuid=" + uuid);
-        boolean DBCheck = mainService.flowerSetToDB(uuid);//trueなら正常
+        boolean DBCheck = mainService.SetToDB(uuid);//trueなら正常
         if (DBCheck) {
             return ResponseEntity.ok("処理完了");
         }else{

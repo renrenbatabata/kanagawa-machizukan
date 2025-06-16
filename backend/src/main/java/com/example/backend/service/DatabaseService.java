@@ -81,9 +81,9 @@ public class DatabaseService {
                             dto.setShootingDate(null);
                         }
 
-                        if(entity.getImageData()!=null){
+                        if (entity.getImageData() != null) {
                             dto.setImageData(Base64.getEncoder().encodeToString(entity.getImageData()));
-                        }else{
+                        } else {
                             dto.setImageData(null);
                         }
                         return dto;
@@ -103,9 +103,9 @@ public class DatabaseService {
                             dto.setShootingDate(null);
                         }
 
-                        if(entity.getImageData()!=null){
+                        if (entity.getImageData() != null) {
                             dto.setImageData(Base64.getEncoder().encodeToString(entity.getImageData()));
-                        }else{
+                        } else {
                             dto.setImageData(null);
                         }
                         return dto;
@@ -113,75 +113,29 @@ public class DatabaseService {
         }
     }
 
-//    private List<ImageDetailDto> mapImageDetailEntityToDto(ImageDetailEntity entity){
-//        return imageDetailEntities.stream()
-//                .map(entity -> {
-//                    ImageDetailDto dto = new ImageDetailDto();
-//                    dto.setId(entity.getId());
-//                    dto.setCategory(entity.getCategory());
-//                    dto.setName(entity.getName());
-//                    if (entity.getShootingDate() != null) {
-//                        dto.setShootingDate(entity.getShootingDate().toString());
-//                    } else {
-//                        dto.setShootingDate(null);
-//                    }
-//
-//                    if(entity.getImageData()!=null){
-//                        dto.setImageData(Base64.getEncoder().encodeToString(entity.getImageData()));
-//                    }else{
-//                        dto.setImageData(null);
-//                    }
-//                    return dto;
-//                }).collect(Collectors.toList());    }
 
     public ShrineInfoDto ShrineSetToDB(SaveRequestDto saveRequestDto) throws IOException {
-        var dto = saveRequestDto.getShrineAnalyzeResponceDto();
-        TempDetailsEntity tempDetailsEntity = new TempDetailsEntity(); // TempDetailsEntity を初期化
-        ShrineInfoDto resultInfo = new ShrineInfoDto(); // 戻り値となる ShrineInfoDto を初期化
-        // UUIDを生成し、TempDetailsEntityに設定
-        String uuid = UUID.randomUUID().toString();
-        tempDetailsEntity.setUuid(uuid);
-        resultInfo.setUuid(uuid); // 戻り値のDTOにもUUIDを設定
-        if (dto.getError() == null) {
-            // AnalyzeService からエラーがない場合
-            var shrineInfoOptional = shrineInfoRepository.findById(dto.getName());
-            if (shrineInfoOptional.isPresent()) {
-                var shrineInfo = shrineInfoOptional.get();
-                tempDetailsEntity.setName(shrineInfo.getName()); // shrineInfoから取得
-                tempDetailsEntity.setAddress(shrineInfo.getName());
-                tempDetailsEntity.setImageData(saveRequestDto.getFile().getBytes());
-                tempDetailsEntity.setShootingDate(LocalDateTime.now());
-                tempDetailsEntity.setCategory(saveRequestDto.getCategory());
-                tempDetailsEntity.setUserId(saveRequestDto.getUserId());
-                tempDetailsRepository.save(tempDetailsEntity); // TempDetailsEntity を保存
-                resultInfo = mapper.map(shrineInfo, ShrineInfoDto.class); // shrineInfoの内容をresultInfoにマッピング
-                resultInfo.setUuid(uuid); // 生成したUUIDを設定
-                resultInfo.setError(null); // エラーなし
-                System.out.println("✅ Shrine registered to TempDetails: " + resultInfo.getName());
+        ShrineInfoEntity entity = shrineInfoRepository.findNearestShrineWithin50m(Double.parseDouble(saveRequestDto.getLatitude()),
+                Double.parseDouble(saveRequestDto.getLongitude())).orElse(null);
 
-            } else {
-                resultInfo.setError("ちかくにじんじゃがみつからないよ！"); // 新しいメッセージ
-                System.out.println("データベースに登録されていない神社が見つかりました（" + dto.getName() + "）。");
-
-                tempDetailsEntity.setName(dto.getName()); // AnalyzeResponseDtoから名前を設定
-                tempDetailsEntity.setFamily("no data."); // デフォルト値
-                tempDetailsEntity.setGenius(null); // デフォルト値
-                tempDetailsEntity.setImageData(saveRequestDto.getFile().getBytes());
-                tempDetailsEntity.setShootingDate(LocalDateTime.now());
-                tempDetailsEntity.setCategory(saveRequestDto.getCategory());
-                tempDetailsEntity.setUserId(saveRequestDto.getUserId());
-                tempDetailsRepository.save(tempDetailsEntity); // TempDetailsEntity を保存
-                mapper.map(dto, resultInfo);
-                resultInfo.setUuid(uuid);
-            }
-
+        if (entity != null) {
+            ShrineInfoDto dto = mapper.map(entity, ShrineInfoDto.class);
+            TempDetailsEntity saveEntity = new TempDetailsEntity();
+            saveEntity.setName(entity.getName());
+            saveEntity.setAddress(saveRequestDto.getAddress());
+            saveEntity.setImageData(saveRequestDto.getFile().getBytes());
+            saveEntity.setShootingDate(LocalDateTime.now());
+            String uuid = UUID.randomUUID().toString();
+            saveEntity.setUuid(uuid);
+            saveEntity.setCategory(saveRequestDto.getCategory());
+            saveEntity.setUserId(saveRequestDto.getUserId());
+            tempDetailsRepository.save(saveEntity);
+            dto.setUuid(uuid);
+            return dto;
         } else {
-            // dto.getError() が null でない場合 (AnalyzeServiceからのエラー)
-            resultInfo.setError("ちかくにじんじゃがみつからないよ！");
-            System.out.println("❌ AnalyzeService からエラーが返されました: " + dto.getError());
-            resultInfo.setName(dto.getName() != null ? dto.getName() : "unknown"); // AnalyzeServiceのエラーだが名前があれば設定
+            System.out.println("ShrineInfo in null ;;");
+            return null;
         }
-        return resultInfo; // 最終的な ShrineInfoDto を返す
     }
 
     public List<QuizDto> getAllQuiz() {
@@ -191,7 +145,6 @@ public class DatabaseService {
                 .collect(Collectors.toList());
     }
 
-    // getPicturesById の修正
     public ItemReturnInfo getPicturesById(Integer id) {
         Optional<ImageDetailEntity> imageDetailEntityOptional = imageDetailRepository.findById(id);
 
@@ -254,7 +207,7 @@ public class DatabaseService {
         }
     }
 
-    public boolean flowerSetToDB(String uuid) {
+    public boolean setToDB(String uuid) {
         TempDetailsEntity info = tempDetailsRepository.findById(uuid).orElse(null);
         if (info != null) {
             ImageDetailEntity entity = mapper.map(info, ImageDetailEntity.class);
@@ -272,5 +225,21 @@ public class DatabaseService {
         return info.stream()
                 .map(entity -> mapper.map(entity, ShrineInfoDto.class))
                 .collect(Collectors.toList());
+    }
+
+    public int getCount(String category, String userId) {
+        return imageDetailRepository.countDistinctNameByCategoryAndUserId(category, userId);
+    }
+
+    public int getAll(String category){
+        if (category.equals("flower")) {
+            return flowersRepository.findAll().size();
+        }
+        if (category.equals("shrine")) {
+            return shrineInfoRepository.findAll().size();
+        }
+        else {
+            return 0;
+        }
     }
 }

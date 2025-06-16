@@ -11,4 +11,7 @@ public class SaveRequestDto {
     private String userId;
     private MultipartFile file;
     private String address;
+    private String latitude;
+    private String longitude;
+
 }
