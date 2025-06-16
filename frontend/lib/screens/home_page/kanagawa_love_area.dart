@@ -2,30 +2,28 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart'; // CupertinoIconsを使用するために必要
 import 'package:frontend/widgets/colors.dart';
 import 'package:percent_indicator/percent_indicator.dart'; // 円形プログレスバーのパッケージ
-import 'package:http/http.dart' as http; // HTTPリクエストを送信するために必要
-import 'dart:convert'; // JSONデータのデコードのために必要
-import 'package:flutter_dotenv/flutter_dotenv.dart'; // .envファイルから環境変数を読み込むため
-import 'package:frontend/screens/auth_page/auth_service.dart'; // AuthServiceをインポート
-import 'package:frontend/screens/zukan_page/zukan_card.dart'
-    show ZukanItem; // ZukanItemモデルをインポート
 
 // KanagawaLoveArea クラス
 // 神奈川の図鑑ラブ度（進捗状況）を表示するウィジェットです。
-// データベースの情報を可視化するため、StatefulWidgetに変更しました。
-class KanagawaLoveArea extends StatefulWidget {
-  const KanagawaLoveArea({super.key});
+// ホームページからデータを直接受け取るようにStatelessWidgetに変更されています。
+class KanagawaLoveArea extends StatelessWidget {
+  // ★ 変更: overallCollected/overallTotalの代わりにoverallProgressPercentを受け取る
+  final double? overallProgressPercent; // Javaで計算済みの総合パーセンテージ (0.0〜1.0)
+  final Map<String, Map<String, int>> categoryCounts; // カテゴリごとのカウントデータ
+  final bool isLoading; // ロード中フラグ
+  final String? errorMessage; // エラーメッセージ
+  final VoidCallback? onRetry; // リトライ用コールバック
 
-  @override
-  State<KanagawaLoveArea> createState() => _KanagawaLoveAreaState();
-}
-
-class _KanagawaLoveAreaState extends State<KanagawaLoveArea> {
-  List<ZukanItem> _allZukanItems = []; // バックエンドから取得した全ての図鑑アイテム
-  bool _isLoading = true; // データロード中かどうかのフラグ
-  String? _errorMessage; // エラーメッセージ
+  const KanagawaLoveArea({
+    super.key,
+    this.overallProgressPercent, // Nullable
+    required this.categoryCounts, // 必須
+    required this.isLoading,
+    this.errorMessage,
+    this.onRetry,
+  });
 
   // カテゴリごとの設定（アイコン、色、バックエンドのカテゴリタイプ）
-  // このリストを基に、各カテゴリのデータを動的に計算します。
   final List<LoveCategoryConfig> _categoryConfigs = const [
     LoveCategoryConfig(
       label: 'おはな',
@@ -50,89 +48,16 @@ class _KanagawaLoveAreaState extends State<KanagawaLoveArea> {
     ),
   ];
 
-  @override
-  void initState() {
-    super.initState();
-    _fetchZukanProgress(); // ウィジェット初期化時にデータ取得を開始
-  }
-
-  // バックエンドから図鑑の全アイテムデータを取得する非同期メソッド
-  Future<void> _fetchZukanProgress() async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
-
-    final baseUrl = dotenv.env['BASE_API_URL'];
-    final userId = AuthService().currentUserId;
-
-    if (baseUrl == null) {
-      _errorMessage = 'Error: BASE_API_URLが設定されていません。';
-      _isLoading = false;
-      print('❌ BASE_API_URLが設定されていません。');
-      return;
-    }
-    if (userId == null) {
-      _errorMessage = 'Error: ユーザーIDが取得できません。ログイン状態を確認してください。';
-      _isLoading = false;
-      print('❌ ユーザーIDがnullです。');
-      return;
-    }
-
-    // 全てのカテゴリのアイテムを取得するため、categoryは"all"をAPIに送る
-    final uri = Uri.parse(
-      '$baseUrl/allPictures',
-    ).replace(queryParameters: {'userId': userId, 'category': 'all'});
-
-    try {
-      final response = await http.post(uri); // POSTリクエストを送信
-
-      if (response.statusCode == 200) {
-        final List<dynamic> jsonList = json.decode(response.body);
-        setState(() {
-          _allZukanItems =
-              jsonList.map((json) => ZukanItem.fromJson(json)).toList();
-          _isLoading = false;
-          print('✅ 図鑑アイテムの進捗データ取得成功: ${_allZukanItems.length}件');
-        });
-      } else {
-        setState(() {
-          _errorMessage =
-              'Failed to load zukan progress. Status code: ${response.statusCode}. Body: ${response.body}';
-          _isLoading = false;
-          print(
-            '❌ 図鑑進捗取得サーバーエラー: ${response.statusCode}, Body: ${response.body}',
-          );
-        });
-      }
-    } catch (e) {
-      setState(() {
-        _errorMessage = 'Error fetching zukan progress: $e';
-        _isLoading = false;
-        print('❌ 図鑑進捗通信エラー: $e');
-      });
-    }
-  }
-
-  // 総合進捗の計算
-  // allZukanItemsリストの合計数と収集数を動的に計算します。
-  int get _totalItems => _allZukanItems.length; // データベースにある全てのアイテムの合計
-  int get _collectedItems =>
-      _allZukanItems
-          .where((item) => true)
-          .length; // 全てのアイテムは発見済みとして扱うため、常に_allZukanItems.length
-
-  // 総合進捗のパーセンテージ
-  double get _overallProgress =>
-      _totalItems > 0 ? _collectedItems / _totalItems : 0.0;
-
-  // 総合進捗に応じたメッセージ
+  // 総合進捗のメッセージ
+  // ★ 変更: overallProgressPercentに基づいてメッセージを生成
   String get _overallProgressMessage {
-    if (_overallProgress == 1.0) {
+    final progress = overallProgressPercent ?? 0.0; // nullの場合は0.0として扱う
+    if (progress >= 1.0) {
+      // 1.0は100%
       return 'コンプリートおめでとう！\nぜんぶ見つけられたね！';
-    } else if (_overallProgress >= 0.7) {
+    } else if (progress >= 0.7) {
       return 'すごーい！\nあと少しでコンプリートだよ！';
-    } else if (_overallProgress >= 0.3) {
+    } else if (progress >= 0.3) {
       return 'よくがんばってるね！\nだいぶ集まってきたよ！';
     } else {
       return 'はじまりはじまり！\nまだまだこれからだよ！';
@@ -141,22 +66,29 @@ class _KanagawaLoveAreaState extends State<KanagawaLoveArea> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return const Center(child: CircularProgressIndicator()); // ローディング中の表示
+    if (isLoading) {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        height: 300, // ローディング時に適切な高さを確保
+        child: const Center(child: CircularProgressIndicator()),
+      );
     }
 
-    if (_errorMessage != null) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text('エラー: $_errorMessage'), // エラーメッセージ表示
-            const SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: _fetchZukanProgress, // リトライボタン
-              child: const Text('リトライ'),
-            ),
-          ],
+    // ★ 変更: overallProgressPercentがnullの場合もエラーとみなす
+    if (errorMessage != null || overallProgressPercent == null) {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        height: 300, // エラー時に適切な高さを確保
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(errorMessage ?? '図鑑の進捗を読み込めませんでした。'),
+              const SizedBox(height: 10),
+              if (onRetry != null)
+                ElevatedButton(onPressed: onRetry, child: const Text('リトライ')),
+            ],
+          ),
         ),
       );
     }
@@ -164,14 +96,9 @@ class _KanagawaLoveAreaState extends State<KanagawaLoveArea> {
     // カテゴリ別ラブ度データを動的に生成
     final List<LoveCategoryData> categoriesData =
         _categoryConfigs.map((config) {
-          final int categoryTotal =
-              _allZukanItems
-                  .where((item) => item.category == config.backendCategoryType)
-                  .length;
-          final int categoryCollected = // すべてのアイテムが発見済みなので、総数と同じ
-              _allZukanItems
-                  .where((item) => item.category == config.backendCategoryType)
-                  .length;
+          final categoryMap = categoryCounts[config.backendCategoryType];
+          final int categoryTotal = categoryMap?['all'] ?? 0;
+          final int categoryCollected = categoryMap?['count'] ?? 0;
 
           return LoveCategoryData(
             label: config.label,
@@ -180,9 +107,7 @@ class _KanagawaLoveAreaState extends State<KanagawaLoveArea> {
             collected: categoryCollected,
             color: config.color,
             subColor: config.subColor,
-            categoryType:
-                config
-                    .backendCategoryType, // ZukanCardとの連携のためbackendCategoryTypeを使用
+            categoryType: config.backendCategoryType,
           );
         }).toList();
 
@@ -220,6 +145,9 @@ class _KanagawaLoveAreaState extends State<KanagawaLoveArea> {
 
   /// 総合ラブ度タイルを構築するウィジェット
   Widget _buildOverallLoveTile(BuildContext context) {
+    // overallProgressPercentがnullでないことを保証
+    final displayProgress = overallProgressPercent ?? 0.0;
+
     return Column(
       children: [
         const Text(
@@ -234,12 +162,12 @@ class _KanagawaLoveAreaState extends State<KanagawaLoveArea> {
         CircularPercentIndicator(
           radius: 85.0,
           lineWidth: 18.0,
-          percent: _overallProgress, // ⭐ 修正: 動的に計算した進捗を使用
+          percent: displayProgress, // ★ 変更: Javaから受け取ったパーセンテージを使用
           center: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                '${(_overallProgress * 100).toInt()}', // ⭐ 修正: パーセンテージを整数で表示
+                '${(displayProgress * 100).toInt()}', // ★ 変更: パーセンテージを整数で表示
                 style: const TextStyle(
                   fontSize: 50,
                   fontWeight: FontWeight.w900,
@@ -265,7 +193,7 @@ class _KanagawaLoveAreaState extends State<KanagawaLoveArea> {
           footer: Padding(
             padding: const EdgeInsets.only(top: 20),
             child: Text(
-              _overallProgressMessage, // ⭐ 修正: 動的に計算したメッセージを使用
+              _overallProgressMessage, // Javaから提供されたパーセントに基づいてメッセージを生成
               textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: 18,
@@ -281,13 +209,10 @@ class _KanagawaLoveAreaState extends State<KanagawaLoveArea> {
 
   /// カテゴリ別ラブ度タイルを構築するウィジェット
   Widget _buildCategoryLoveTile(BuildContext context, LoveCategoryData data) {
-    final double progress =
-        data.total > 0 ? data.collected / data.total : 0.0; // ⭐ 修正: 0除算対策
+    final double progress = data.total > 0 ? data.collected / data.total : 0.0;
     return InkWell(
       onTap: () {
-        // TODO: ここに各カテゴリの詳細画面への遷移処理を実装します。
-        // 例えば、カテゴリ名をZukanページに渡してフィルタリング表示する
-        print('${data.label} カテゴリがタップされました');
+        debugPrint('${data.label} カテゴリがタップされました');
       },
       borderRadius: BorderRadius.circular(15),
       child: Container(
@@ -305,7 +230,6 @@ class _KanagawaLoveAreaState extends State<KanagawaLoveArea> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // タイトルバー（色付きの部分）
             Container(
               decoration: BoxDecoration(
                 color: data.color,
@@ -333,7 +257,6 @@ class _KanagawaLoveAreaState extends State<KanagawaLoveArea> {
                 ],
               ),
             ),
-            // 進捗表示部分
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.all(12.0),
@@ -342,7 +265,7 @@ class _KanagawaLoveAreaState extends State<KanagawaLoveArea> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Text(
-                      '${data.collected} / ${data.total}', // 収集数 / 総数
+                      '${data.collected} / ${data.total}',
                       style: const TextStyle(
                         fontSize: 34,
                         fontWeight: FontWeight.w900,
@@ -371,7 +294,6 @@ class _KanagawaLoveAreaState extends State<KanagawaLoveArea> {
   }
 }
 
-/// 各カテゴリのデータを保持するクラス（ウィジェット内で動的に生成されるため、変更なし）
 class LoveCategoryData {
   final String label;
   final IconData icon;
@@ -379,7 +301,7 @@ class LoveCategoryData {
   final int collected;
   final Color color;
   final Color subColor;
-  final String categoryType; // カテゴリタイプ（ZukanCardとの連携用）
+  final String categoryType;
 
   const LoveCategoryData({
     required this.label,
@@ -392,15 +314,12 @@ class LoveCategoryData {
   });
 }
 
-// ⭐ 新規追加: カテゴリ設定を保持するクラス
-// これにより、UIの表示ラベルとバックエンドのカテゴリタイプを紐付けます。
 class LoveCategoryConfig {
-  final String label; // UIに表示する日本語ラベル
-  final IconData icon; // 表示するアイコン
-  final Color color; // メインカラー
-  final Color subColor; // サブカラー
-  final String
-  backendCategoryType; // バックエンドのカテゴリ名 (例: 'flower', 'shrine', 'kame')
+  final String label;
+  final IconData icon;
+  final Color color;
+  final Color subColor;
+  final String backendCategoryType;
 
   const LoveCategoryConfig({
     required this.label,

@@ -79,6 +79,16 @@ class PicturePreviewScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
+    // レスポンシブな値の計算例
+    final buttonPaddingHorizontal = screenWidth * 0.1; // 画面幅の10%
+    final buttonPaddingVertical = screenHeight * 0.025; // 画面高さの2.5%
+    final buttonFontSize = screenWidth * 0.07; // 画面幅の7%
+    final iconSize = screenWidth * 0.08; // 画面幅の8%
+    final imageSize = screenWidth * 0.7; // 画面幅の70%
+
     return Scaffold(
       body: Column(
         children: [
@@ -87,30 +97,35 @@ class PicturePreviewScreen extends StatelessWidget {
 
           // 再撮影ボタン
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 20.0),
+            padding: EdgeInsets.symmetric(
+              vertical: screenHeight * 0.02,
+            ), // 画面高さの2%
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(50.0),
                 ),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 55,
-                  vertical: 20,
+                padding: EdgeInsets.symmetric(
+                  horizontal: buttonPaddingHorizontal,
+                  vertical: buttonPaddingVertical,
                 ),
               ),
               onPressed: () {
                 Navigator.pop(context);
               },
-              child: const Row(
+              child: Row(
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.close, color: Colors.white, size: 30),
-                  SizedBox(width: 2),
+                  Icon(Icons.close, color: Colors.white, size: iconSize),
+                  SizedBox(width: screenWidth * 0.005), // 画面幅の0.5%
                   Text(
                     "とりなおす",
-                    style: TextStyle(fontSize: 30, color: Colors.white),
+                    style: TextStyle(
+                      fontSize: buttonFontSize,
+                      color: Colors.white,
+                    ),
                   ),
                 ],
               ),
@@ -123,8 +138,8 @@ class PicturePreviewScreen extends StatelessWidget {
               child: ClipOval(
                 child: Image.file(
                   File(imagePath),
-                  width: 350,
-                  height: 350,
+                  width: imageSize,
+                  height: imageSize,
                   fit: BoxFit.cover,
                 ),
               ),
@@ -133,23 +148,28 @@ class PicturePreviewScreen extends StatelessWidget {
 
           // かいせきボタン
           Container(
-            padding: const EdgeInsets.symmetric(vertical: 20.0),
+            padding: EdgeInsets.symmetric(
+              vertical: screenHeight * 0.02,
+            ), // 画面高さの2%
             child: Column(
               children: [
                 Bubble(
                   text: 'ずかんにとうろくしてね！',
-                  textStyle: TextStyle(fontSize: 20, color: Colors.black),
+                  textStyle: TextStyle(
+                    fontSize: screenWidth * 0.05,
+                    color: Colors.black,
+                  ), // 画面幅の5%
                 ),
-                const SizedBox(height: 20),
+                SizedBox(height: screenHeight * 0.04), // 画面高さの5%
                 ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.orange,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(50.0),
                     ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 55,
-                      vertical: 20,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: buttonPaddingHorizontal,
+                      vertical: buttonPaddingVertical,
                     ),
                   ),
                   onPressed: () async {
@@ -317,23 +337,26 @@ class PicturePreviewScreen extends StatelessWidget {
                       );
                     }
                   },
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.analytics,
                     color: Colors.white,
-                    size: 30,
+                    size: iconSize, // レスポンシブなアイコンサイズ
                   ),
-                  label: const Text(
+                  label: Text(
                     "かいせき",
-                    style: TextStyle(fontSize: 30, color: Colors.white),
+                    style: TextStyle(
+                      fontSize: buttonFontSize,
+                      color: Colors.white,
+                    ), // レスポンシブなフォントサイズ
                   ),
                 ),
-                const SizedBox(height: 20),
+                SizedBox(height: screenHeight * 0.02), // 画面高さの2%
               ],
             ),
           ),
         ],
       ),
-      bottomNavigationBar: const Control(), // constを追加
+      bottomNavigationBar: const Control(),
     );
   }
 }

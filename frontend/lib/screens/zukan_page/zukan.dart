@@ -38,7 +38,7 @@ class _ZukanState extends State<Zukan> {
   final Map<String, Map<String, Color>> categoryColors = {
     "すべて": {"main": AppColors.orange, "sub": AppColors.orangeSub},
     "おはな": {"main": AppColors.pink, "sub": AppColors.pinkSub},
-    "れきし": {"main": AppColors.red, "sub": AppColors.redSub},
+    "じんじゃ": {"main": AppColors.red, "sub": AppColors.redSub},
     "かめ太郎": {"main": AppColors.blue, "sub": AppColors.blueSub},
   };
 
@@ -158,6 +158,9 @@ class _ZukanState extends State<Zukan> {
 
   @override
   Widget build(BuildContext context) {
+    // 画面サイズを取得
+    final screenHeight = MediaQuery.of(context).size.height;
+
     // 現在のカテゴリと検索テキストに基づいて、表示するアイテムをフィルタリングします。
     List<ZukanItem> filteredItems =
         allZukanItems.where((item) {
@@ -175,7 +178,7 @@ class _ZukanState extends State<Zukan> {
               break;
             case "かめ太郎":
               categoryMatches =
-                  item.category == "kame"; // バックエンドのカテゴリ名に合わせてください
+                  item.category == "turtle"; // バックエンドのカテゴリ名に合わせてください
               break;
             default:
               categoryMatches = false; // 未知のカテゴリは表示しない
@@ -203,29 +206,39 @@ class _ZukanState extends State<Zukan> {
         // ページの主要なコンテンツを縦に並べる
         children: [
           const ImageHeader(), // アプリケーションのヘッダー部分
-          const SizedBox(height: 15.0), // ヘッダーと検索バーの間のスペース
+          SizedBox(height: screenHeight * 0.015), // ヘッダーと検索バーの間のスペースをレスポンシブに
           // 検索バーウィジェット
-          SearchBarWidget(
-            controller: _searchController, // 検索テキストの制御に使うコントローラー
-            onChanged: (value) {
-              // 検索テキストが変更されたら、Stateを更新し、リストを再フィルタリング
-              setState(() {
-                _searchText = value;
-              });
-            },
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16.0,
+            ), // 左右のパディングは固定で良い場合が多い
+            child: SearchBarWidget(
+              controller: _searchController, // 検索テキストの制御に使うコントローラー
+              onChanged: (value) {
+                // 検索テキストが変更されたら、Stateを更新し、リストを再フィルタリング
+                setState(() {
+                  _searchText = value;
+                });
+              },
+            ),
           ),
-          const SizedBox(height: 20.0), // 検索バーとカテゴリタブの間のスペース
+          SizedBox(height: screenHeight * 0.02), // 検索バーとカテゴリタブの間のスペースをレスポンシブに
           // カテゴリタブウィジェット
-          CategoryTabs(
-            selectedCategory: selectedCategory, // 現在選択されているカテゴリを渡す
-            onCategorySelected: (category) {
-              // カテゴリが選択されたら、Stateを更新し、新しいカテゴリでデータを再取得
-              setState(() {
-                selectedCategory = category;
-                _fetchZukanItems(); // カテゴリが変わったら再度データを取得
-              });
-            },
-            categoryColors: categoryColors, // カテゴリの色情報を渡す
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16.0,
+            ), // 左右のパディングは固定で良い場合が多い
+            child: CategoryTabs(
+              selectedCategory: selectedCategory, // 現在選択されているカテゴリを渡す
+              onCategorySelected: (category) {
+                // カテゴリが選択されたら、Stateを更新し、新しいカテゴリでデータを再取得
+                setState(() {
+                  selectedCategory = category;
+                  _fetchZukanItems(); // カテゴリが変わったら再度データを取得
+                });
+              },
+              categoryColors: categoryColors, // カテゴリの色情報を渡す
+            ),
           ),
 
           // 図鑑リストを表示する領域
@@ -242,7 +255,9 @@ class _ZukanState extends State<Zukan> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(_errorMessage!), // エラーメッセージ
-                          const SizedBox(height: 10),
+                          SizedBox(
+                            height: screenHeight * 0.015,
+                          ), // スペースをレスポンシブに
                           ElevatedButton(
                             onPressed:
                                 _fetchZukanItems, // リトライボタンをタップすると再度データ取得を試みる
@@ -260,7 +275,7 @@ class _ZukanState extends State<Zukan> {
                           allZukanItems, // お花モデルメッセージのために全てのアイテムリストを渡す
                     ),
           ),
-          const SizedBox(height: 10.0), // リストコンテナとフッターの間のスペース
+          SizedBox(height: screenHeight * 0.015), // リストコンテナとフッターの間のスペースをレスポンシブに
         ],
       ),
       bottomNavigationBar: const Control(), // アプリケーションのフッターナビゲーションバー

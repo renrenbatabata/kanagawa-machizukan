@@ -54,7 +54,6 @@ class TakePhotoScreen extends StatefulWidget {
 
 class _TakePhotoScreenState extends State<TakePhotoScreen>
     with SingleTickerProviderStateMixin {
-  // ⭐ SingleTickerProviderStateMixin を追加
   late CameraController _controller;
   late Future<void> _initializeControllerFuture;
   late AnimationController
@@ -166,77 +165,170 @@ class _TakePhotoScreenState extends State<TakePhotoScreen>
 
   @override
   Widget build(BuildContext context) {
+    // デバイスの画面サイズ情報を取得
+    final mediaQuery = MediaQuery.of(context);
+    final screenWidth = mediaQuery.size.width;
+    final screenHeight = mediaQuery.size.height;
+    final textScaleFactor = mediaQuery.textScaleFactor;
+    // SafeAreaのパディング情報を取得
+    final EdgeInsets safeAreaPadding = mediaQuery.padding;
+
+    // --- 各UI要素のサイズと位置を画面サイズに対する割合で計算 ---
+    // 基準となる画面幅と高さを定義 (例: iPhone 8/SEの論理ピクセルサイズ)
+    const double referenceWidth = 375.0;
+    const double referenceHeight = 667.0;
+
+    // --- 各UI要素の基準オフセット値と比率を定数で定義 ---
+    // 吹き出し関連
+    const double baseBubbleTopOffset = 120.0;
+    const double baseBubbleHorizontalPadding = 20.0;
+    const double baseBubbleHeight = 80.0;
+    // ⭐ 吹き出し内の基準フォントサイズをさらに小さく調整
+    const double baseBubbleFontSize = 22.0;
+    // ⭐ フォントサイズの上限値をさらに引き下げ
+    const double maxBubbleFontSize = 25.0;
+
+    // 撮影エリアの白枠関連
+    const double frameWidthRatio = 0.85; // 画面幅に対する比率
+    const double frameHeightRatio = 0.4; // 画面高さに対する比率
+    const double baseFrameBorderWidth = 6.0;
+    const double baseFrameTopMargin = 50.0;
+
+    // シャッターボタン関連
+    const double baseShutterButtonBottomOffset = 40.0; // デバイス画面下端からの基準オフセット
+    const double baseShutterButtonPadding = 12.0;
+    const double baseShutterIconSize = 48.0;
+
+    // 戻るボタン関連
+    const double baseBackButtonTopOffset = 10.0;
+    const double baseBackButtonRightOffset = 20.0;
+
+    // --- 計算されたUI要素のサイズと位置 ---
+    // 吹き出し
+    final double bubbleTop =
+        screenHeight * (baseBubbleTopOffset / referenceHeight);
+    final double bubbleHorizontalPadding =
+        screenWidth * (baseBubbleHorizontalPadding / referenceWidth);
+    final double bubbleHeight =
+        screenHeight * (baseBubbleHeight / referenceHeight);
+    final double bubbleFontSize =
+        (baseBubbleFontSize * (screenWidth / referenceWidth)).clamp(
+          14.0,
+          maxBubbleFontSize,
+        ) *
+        textScaleFactor; // ⭐ 最小値も調整
+
+    // 撮影エリアの白枠
+    final double frameWidth = screenWidth * frameWidthRatio;
+    final double frameHeight = screenHeight * frameHeightRatio;
+    final double frameBorderWidth =
+        (baseFrameBorderWidth * (screenWidth / referenceWidth)).clamp(2.0, 8.0);
+    final double frameTopMargin =
+        screenHeight * (baseFrameTopMargin / referenceHeight);
+
+    // シャッターボタン
+    final double shutterButtonBottom =
+        (screenHeight * (baseShutterButtonBottomOffset / referenceHeight)) +
+        safeAreaPadding.bottom;
+    final double shutterButtonPadding = (baseShutterButtonPadding *
+            (screenWidth / referenceWidth))
+        .clamp(8.0, 20.0);
+    final double shutterIconSize = (baseShutterIconSize *
+            (screenWidth / referenceWidth))
+        .clamp(36.0, 60.0);
+
+    // 戻るボタン
+    final double backButtonTop =
+        (screenHeight * (baseBackButtonTopOffset / referenceHeight)) +
+        safeAreaPadding.top;
+    final double backButtonRight =
+        screenWidth * (baseBackButtonRightOffset / referenceWidth);
+
     return Scaffold(
       backgroundColor: Colors.black,
       body: FutureBuilder<void>(
         future: _initializeControllerFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
-            return Stack(
-              children: [
-                // カメラプレビュー（背景）
-                Positioned.fill(child: CameraPreview(_controller)),
-
-                // 上部の吹き出しとテキスト
-                Positioned(
-                  top: 160,
-                  left: 20,
-                  right: 20,
-                  height: 80,
-                  child: Bubble(
-                    text: 'とりたいものを ここにいれてね！',
-                    textStyle: const TextStyle(
-                      fontSize: 20,
-                      color: Color.fromARGB(255, 0, 0, 0),
+            if (_controller.value.isInitialized) {
+              return Stack(
+                children: [
+                  // カメラプレビュー（背景）
+                  Positioned.fill(
+                    child: AspectRatio(
+                      aspectRatio: _controller.value.aspectRatio,
+                      child: CameraPreview(_controller),
                     ),
                   ),
-                ),
 
-                // 撮影エリアの白枠
-                Center(
-                  child: Container(
-                    margin: const EdgeInsets.only(top: 10),
-                    width: MediaQuery.of(context).size.width * 0.85,
-                    height: MediaQuery.of(context).size.height * 0.4,
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.white, width: 6),
+                  // 上部の吹き出しとテキスト
+                  Positioned(
+                    top: bubbleTop,
+                    left: bubbleHorizontalPadding,
+                    right: bubbleHorizontalPadding,
+                    height: bubbleHeight,
+                    child: Bubble(
+                      text: 'とりたいものを ここにいれてね！',
+                      textStyle: TextStyle(
+                        fontSize: bubbleFontSize, // ⭐ 調整されたフォントサイズを使用
+                        color: const Color.fromARGB(255, 0, 0, 0),
+                      ),
                     ),
                   ),
-                ),
 
-                // カメラと画像ボタン
-                Positioned(
-                  bottom: 150,
-                  left: 0,
-                  right: 0,
-                  child: Center(
-                    // Centerウィジェットを追加してボタンを中央に配置
-                    // ⭐ ScaleTransition でボタンの拡大縮小アニメーションを適用
-                    child: ScaleTransition(
-                      scale: _shutterButtonScaleAnimation,
-                      child: GestureDetector(
-                        onTap: _takePicture,
-                        child: Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: const BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.photo_camera,
-                            size: 48,
-                            color: Colors.green,
+                  // 撮影エリアの白枠
+                  Center(
+                    child: Container(
+                      margin: EdgeInsets.only(top: frameTopMargin),
+                      width: frameWidth,
+                      height: frameHeight,
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: Colors.white,
+                          width: frameBorderWidth,
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  // カメラと画像ボタン
+                  Positioned(
+                    bottom: shutterButtonBottom,
+                    left: 0,
+                    right: 0,
+                    child: Center(
+                      child: ScaleTransition(
+                        scale: _shutterButtonScaleAnimation,
+                        child: GestureDetector(
+                          onTap: _takePicture,
+                          child: Container(
+                            padding: EdgeInsets.all(shutterButtonPadding),
+                            decoration: const BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.photo_camera,
+                              size: shutterIconSize,
+                              color: Colors.green,
+                            ),
                           ),
                         ),
                       ),
                     ),
                   ),
-                ),
 
-                // 戻るボタン
-                Positioned(top: 40, right: 20, child: CustomBackButton()),
-              ],
-            );
+                  // 戻るボタン
+                  Positioned(
+                    top: backButtonTop,
+                    right: backButtonRight,
+                    child: CustomBackButton(),
+                  ),
+                ],
+              );
+            } else {
+              return const Center(child: CircularProgressIndicator());
+            }
           } else {
             return const Center(child: CircularProgressIndicator());
           }

@@ -50,6 +50,11 @@ class _AuthScreenState extends State<AuthScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // ★ 画面の幅を取得
+    final screenWidth = MediaQuery.of(context).size.width;
+    // ★ ボタンの目標幅を設定（例: 画面幅の80%）
+    final double buttonWidth = screenWidth * 0.8;
+
     return Scaffold(
       backgroundColor: const Color(0xFFFFF6E5), // やさしいベージュ
       body: Stack(
@@ -84,58 +89,66 @@ class _AuthScreenState extends State<AuthScreen> {
                   const SizedBox(height: 30), // ロゴとメッセージの間隔
                   // メッセージ
                   Text(
-                    'きみだけのずかんをつくろう！',
+                    'アカウントを作成しよう！',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontSize: 25, // フォントサイズを調整
+                      fontSize: 20, // フォントサイズを調整
                       fontWeight: FontWeight.bold,
                       color: const Color.fromARGB(255, 68, 68, 68), // 黒に近いグレー
                     ),
                   ),
                   const SizedBox(height: 50), // メッセージとボタンの間隔を広げる
                   // Googleサインインボタン
-                  ElevatedButton.icon(
-                    onPressed: () async {
-                      UserCredential? userCredential =
-                          await _signInWithGoogle();
-                      if (userCredential != null) {
-                        debugPrint('ログイン後のホーム画面へ遷移');
-                        Navigator.of(context).pushReplacement(
-                          MaterialPageRoute(
-                            builder: (context) => const HomePage(),
-                          ),
-                        );
-                      }
-                    },
-                    icon: Image.asset(
-                      'images/google_logo.png',
-                      height: 32, // Googleロゴをさらに大きく
-                    ),
-                    label: const Text(
-                      'Googleでログイン', // より簡潔な「ログイン」を強調
-                      style: TextStyle(
-                        fontSize: 22, // フォントサイズをさらに大きく
-                        color: Colors.black87,
-                        fontWeight: FontWeight.bold, // 太字を強調
+                  // ★ ここをSizedBoxでラップして幅を制御
+                  SizedBox(
+                    // ★追加
+                    width: buttonWidth, // ★変更: 計算した幅を適用
+                    child: ElevatedButton.icon(
+                      onPressed: () async {
+                        UserCredential? userCredential =
+                            await _signInWithGoogle();
+                        if (userCredential != null) {
+                          debugPrint('ログイン後のホーム画面へ遷移');
+                          Navigator.of(context).pushReplacement(
+                            MaterialPageRoute(
+                              builder: (context) => const HomePage(),
+                            ),
+                          );
+                        }
+                      },
+                      icon: Image.asset(
+                        'images/google_logo.png',
+                        height: 32, // Googleロゴをさらに大きく
                       ),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.white, // 白背景
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 50, // 横方向のパディングをさらに広げる
-                        vertical: 20, // 縦方向のパディングをさらに広げる
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(40), // 角丸をさらに大きく
-                        side: BorderSide(
-                          color: Colors.grey.shade400, // 枠線を少し濃く
-                          width: 2, // 枠線を太く
+                      label: const Text(
+                        'Googleでログイン', // より簡潔な「ログイン」を強調
+                        style: TextStyle(
+                          fontSize: 22, // フォントサイズをさらに大きく
+                          color: Colors.black87,
+                          fontWeight: FontWeight.bold, // 太字を強調
                         ),
                       ),
-                      shadowColor: Colors.black.withOpacity(0.4), // 影をさらに濃く
-                      elevation: 10, // 影の深さを強調
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.white, // 白背景
+                        // padding: const EdgeInsets.symmetric( // ★ paddingは削除または調整
+                        //   horizontal: 50, // 幅はSizedBoxで指定するため、水平パディングは不要に
+                        //   vertical: 20,
+                        // ),
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 20,
+                        ), // 垂直パディングのみ維持
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(40), // 角丸をさらに大きく
+                          side: BorderSide(
+                            color: Colors.grey.shade400, // 枠線を少し濃く
+                            width: 2, // 枠線を太く
+                          ),
+                        ),
+                        shadowColor: Colors.black.withOpacity(0.4), // 影をさらに濃く
+                        elevation: 10, // 影の深さを強調
+                      ),
                     ),
-                  ),
+                  ), // ★SizedBoxの閉じタグを追加
                   const SizedBox(height: 40), // ボタン下の余白 (必要に応じて調整)
                 ],
               ),

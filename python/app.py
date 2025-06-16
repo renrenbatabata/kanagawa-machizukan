@@ -27,16 +27,16 @@ def analyze():
     # カテゴリに基づいて処理
 
     if category == 'flower':
-        flowers_list_json_str = request.form.get('flowerslist')
+        flowers_list_json_str = request.form.get('flowersList')
         flowers_list_from_request = []
 
         if flowers_list_json_str:
             try:
                 flowers_list_from_request = json.loads(flowers_list_json_str)
                 if not isinstance(flowers_list_from_request, list):
-                    return jsonify({'error': '花のリスト（flowerslist）が無効な形式です。リストを指定してください。'}), 400
+                    return jsonify({'error': '花のリスト（flowersList）が無効な形式です。リストを指定してください。'}), 400
             except json.JSONDecodeError:
-                return jsonify({'error': '花のリスト（flowerslist）のJSON形式が不正です'}), 400
+                return jsonify({'error': '花のリスト（flowersList）のJSON形式が不正です'}), 400
 
         if not flowers_list_from_request:
             return jsonify({'error': '花のリスト（flowerslist）が提供されていないか、空です'}), 400

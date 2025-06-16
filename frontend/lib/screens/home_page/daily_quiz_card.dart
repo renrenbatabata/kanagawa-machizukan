@@ -4,114 +4,58 @@ import 'package:flutter/material.dart';
 import 'package:frontend/screens/quiz_page/quiz_data.dart'; // QuizQuestionモデルをインポート
 import 'package:frontend/widgets/colors.dart'; // AppColorsとColorExtensionをインポート
 import 'package:frontend/screens/quiz_page/quiz_screen.dart'; // QuizScreenをインポート
-import 'dart:math'; // Randomクラスを使用するためにインポート
-import 'package:http/http.dart' as http; // HTTPリクエスト用
-import 'dart:convert'; // JSONデコード用
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+// import 'dart:math'; // Randomクラスは不要になる
+// import 'package:http/http.dart' as http; // HTTPリクエストは不要になる
+// import 'dart:convert'; // JSONデコードは不要になる
+// import 'package:flutter_dotenv/flutter_dotenv'; // dotenvも不要になる
 
 // ホーム画面に表示する簡易クイズカード
 class DailyQuizCard extends StatefulWidget {
-  const DailyQuizCard({super.key});
+  // ★追加・変更: 親からデータを受け取る
+  final QuizQuestion? dailyQuestion;
+  final bool isLoading;
+  final String? errorMessage;
+  final VoidCallback? onRetry; // 再試行ボタン用のコールバック
+
+  const DailyQuizCard({
+    super.key,
+    required this.dailyQuestion, // 必須プロパティに
+    required this.isLoading, // 必須プロパティに
+    this.errorMessage, // エラーメッセージはNullable
+    this.onRetry, // 再試行コールバックもNullable
+  });
 
   @override
   State<DailyQuizCard> createState() => _DailyQuizCardState();
 }
 
 class _DailyQuizCardState extends State<DailyQuizCard> {
-  //  データの状態管理変数
-  QuizQuestion? _dailyQuestion; // その日のクイズ問題（Nullableにする）
-  bool _isLoading = true; // データのロード中かどうかのフラグ
-  String? _errorMessage; // エラーメッセージ
-
+  // データの状態管理変数は親から受け取るため、ここでは回答選択の状態のみ
   int? _selectedOptionIndex; // 選択された選択肢のインデックス
   bool _isAnswerChecked = false; // 回答がチェックされたかどうかのフラグ
 
-  // エラーダイアログを表示するメソッドを追加
-  Future<void> _showErrorDialog(BuildContext context, String message) async {
-    return showDialog<void>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('エラー'),
-          content: Text(message),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('OK'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
+  // エラーダイアログは不要になる (HomePageで処理するため)
+  // Future<void> _showErrorDialog(BuildContext context, String message) async { ... }
 
   @override
   void initState() {
     super.initState();
-    _fetchAndSetDailyQuiz(); // 画面が初期化されるときにその日のクイズを生成
+    // ここで_fetchAndSetDailyQuiz()は呼ばない
   }
 
-  // ★★★  バックエンドからクイズ問題を取得し、日替わりクイズをセットする関数 ★★★
-  Future<void> _fetchAndSetDailyQuiz() async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
-
-    final baseUrl = dotenv.env['BASE_API_URL'];
-    if (baseUrl == null) {
-      _showErrorDialog(context, "APIのURLが設定されていません。");
-      return;
-    }
-    final uri = Uri.parse('$baseUrl/quiz'); // APIのエンドポイント
-
-    try {
-      final response = await http.get(uri);
-
-      if (response.statusCode == 200) {
-        final List<dynamic> jsonList = jsonDecode(response.body);
-        if (jsonList.isEmpty) {
-          _errorMessage = 'クイズ問題がありません。';
-          _dailyQuestion = null;
-          return;
-        }
-        final List<QuizQuestion> allQuizQuestions =
-            jsonList.map((json) => QuizQuestion.fromJson(json)).toList();
-
-        // その日のクイズ問題を生成
-        final int todaySeed =
-            DateTime.now().day +
-            DateTime.now().month * 100 +
-            DateTime.now().year * 10000;
-        final Random random = Random(todaySeed);
-
-        // allQuizQuestionsをシャッフル
-        final List<QuizQuestion> shuffledQuestions = List.from(
-          allQuizQuestions,
-        );
-        shuffledQuestions.shuffle(random);
-
-        // その日の問題を選ぶ（1問だけ）
-        _dailyQuestion = shuffledQuestions.first;
-      } else {
-        _errorMessage = 'クイズの取得に失敗しました: ${response.statusCode}';
-        debugPrint('DailyQuizCard APIエラー: ${response.body}');
-        _dailyQuestion = null;
-      }
-    } catch (e) {
-      _errorMessage = 'ネットワークエラー: $e';
-      debugPrint('DailyQuizCard 通信エラー: $e');
-      _dailyQuestion = null;
-    } finally {
-      setState(() {
-        _isLoading = false;
-        _selectedOptionIndex = null; // 新しい問題がセットされたら選択肢をリセット
-        _isAnswerChecked = false; // 回答済みフラグをリセット
-      });
+  // 親からデータが更新されたときに状態をリセット
+  @override
+  void didUpdateWidget(covariant DailyQuizCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // 新しいクイズ問題が来た場合、選択状態をリセット
+    if (widget.dailyQuestion != oldWidget.dailyQuestion) {
+      _selectedOptionIndex = null;
+      _isAnswerChecked = false;
     }
   }
+
+  // ★★★ バックエンドからクイズ問題を取得し、日替わりクイズをセットする関数は親に移動 ★★★
+  // この関数は削除されます。
 
   // 回答をチェックする関数 (変更なし)
   void _checkAnswer() {
@@ -124,7 +68,9 @@ class _DailyQuizCardState extends State<DailyQuizCard> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
+    // ロード中
+    if (widget.isLoading) {
+      // 親から受け取ったisLoadingを使用
       return Container(
         width: double.infinity,
         margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -145,7 +91,9 @@ class _DailyQuizCardState extends State<DailyQuizCard> {
       );
     }
 
-    if (_errorMessage != null || _dailyQuestion == null) {
+    // エラーまたはデータがない場合
+    if (widget.errorMessage != null || widget.dailyQuestion == null) {
+      // 親から受け取った errorMessage & dailyQuestion
       return Container(
         width: double.infinity,
         margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -171,13 +119,13 @@ class _DailyQuizCardState extends State<DailyQuizCard> {
             ),
             const SizedBox(height: 10),
             Text(
-              _errorMessage ?? '今日のクイズは表示できませんでした。\n後でもう一度お試しください。',
+              widget.errorMessage ?? '今日のクイズは表示できませんでした。\n後でもう一度お試しください。',
               textAlign: TextAlign.center,
               style: const TextStyle(fontSize: 16, color: Colors.black54),
             ),
             const SizedBox(height: 10),
             ElevatedButton.icon(
-              onPressed: _fetchAndSetDailyQuiz,
+              onPressed: widget.onRetry, // 親から渡されたコールバックを使用
               icon: const Icon(Icons.refresh),
               label: const Text('再試行'),
               style: ElevatedButton.styleFrom(
@@ -223,7 +171,7 @@ class _DailyQuizCardState extends State<DailyQuizCard> {
           ),
           const SizedBox(height: 10),
           Text(
-            _dailyQuestion!.questionText, // Nullable対応
+            widget.dailyQuestion!.questionText, // 親から受け取ったdailyQuestionを使用
             style: const TextStyle(
               fontSize: 16,
               color: Color.fromARGB(255, 0, 0, 0),
@@ -240,7 +188,7 @@ class _DailyQuizCardState extends State<DailyQuizCard> {
                 color:
                     _isAnswerChecked
                         ? (_selectedOptionIndex ==
-                                _dailyQuestion!.correctOptionIndex
+                                widget.dailyQuestion!.correctOptionIndex
                             ? AppColors.correctAnswerGreen
                             : AppColors.wrongAnswerRed)
                         : Colors.grey.shade400,
@@ -254,7 +202,7 @@ class _DailyQuizCardState extends State<DailyQuizCard> {
                 hint: Text(
                   _isAnswerChecked
                       ? (_selectedOptionIndex ==
-                              _dailyQuestion!.correctOptionIndex
+                              widget.dailyQuestion!.correctOptionIndex
                           ? 'せいかい！'
                           : 'ざんねん！')
                       : 'こたえをえらんでね！',
@@ -263,7 +211,7 @@ class _DailyQuizCardState extends State<DailyQuizCard> {
                     color:
                         _isAnswerChecked
                             ? (_selectedOptionIndex ==
-                                    _dailyQuestion!.correctOptionIndex
+                                    widget.dailyQuestion!.correctOptionIndex
                                 ? AppColors.correctAnswerGreen.darker()
                                 : AppColors.wrongAnswerRed.darker())
                             : Colors.black54,
@@ -273,7 +221,7 @@ class _DailyQuizCardState extends State<DailyQuizCard> {
                 icon:
                     _isAnswerChecked
                         ? (_selectedOptionIndex ==
-                                _dailyQuestion!.correctOptionIndex
+                                widget.dailyQuestion!.correctOptionIndex
                             ? const Icon(
                               Icons.check_circle,
                               color: AppColors.correctAnswerGreen,
@@ -292,7 +240,7 @@ class _DailyQuizCardState extends State<DailyQuizCard> {
                           });
                         },
                 items:
-                    _dailyQuestion!.options.asMap().entries.map((entry) {
+                    widget.dailyQuestion!.options.asMap().entries.map((entry) {
                       int idx = entry.key;
                       String option = entry.value;
                       return DropdownMenuItem<int>(
@@ -304,12 +252,16 @@ class _DailyQuizCardState extends State<DailyQuizCard> {
                             color:
                                 _isAnswerChecked &&
                                         idx ==
-                                            _dailyQuestion!.correctOptionIndex
+                                            widget
+                                                .dailyQuestion!
+                                                .correctOptionIndex
                                     ? AppColors.correctAnswerGreen.darker()
                                     : _isAnswerChecked &&
                                         idx == _selectedOptionIndex &&
                                         idx !=
-                                            _dailyQuestion!.correctOptionIndex
+                                            widget
+                                                .dailyQuestion!
+                                                .correctOptionIndex
                                     ? AppColors.wrongAnswerRed.darker()
                                     : Colors.black87,
                             fontWeight: FontWeight.bold,
@@ -360,14 +312,14 @@ class _DailyQuizCardState extends State<DailyQuizCard> {
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
                     color:
-                        _dailyQuestion!.correctOptionIndex ==
+                        widget.dailyQuestion!.correctOptionIndex ==
                                 _selectedOptionIndex
                             ? AppColors.correctAnswerGreen.withOpacity(0.1)
                             : AppColors.wrongAnswerRed.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
                       color:
-                          _dailyQuestion!.correctOptionIndex ==
+                          widget.dailyQuestion!.correctOptionIndex ==
                                   _selectedOptionIndex
                               ? AppColors.correctAnswerGreen
                               : AppColors.wrongAnswerRed,
@@ -378,7 +330,7 @@ class _DailyQuizCardState extends State<DailyQuizCard> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        _dailyQuestion!.correctOptionIndex ==
+                        widget.dailyQuestion!.correctOptionIndex ==
                                 _selectedOptionIndex
                             ? 'せいかい！'
                             : 'ざんねん...',
@@ -386,7 +338,7 @@ class _DailyQuizCardState extends State<DailyQuizCard> {
                           fontSize: 16, // フォントサイズを調整
                           fontWeight: FontWeight.bold,
                           color:
-                              _dailyQuestion!.correctOptionIndex ==
+                              widget.dailyQuestion!.correctOptionIndex ==
                                       _selectedOptionIndex
                                   ? AppColors.correctAnswerGreen
                                   : AppColors.wrongAnswerRed,
@@ -394,7 +346,7 @@ class _DailyQuizCardState extends State<DailyQuizCard> {
                       ),
                       const SizedBox(height: 5),
                       Text(
-                        _dailyQuestion!.explanation,
+                        widget.dailyQuestion!.explanation,
                         style: const TextStyle(
                           fontSize: 12, // 解説のフォントサイズを調整
                           color: Colors.black87,

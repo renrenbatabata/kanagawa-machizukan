@@ -19,8 +19,6 @@ class _StartPageState extends State<StartPage> with TickerProviderStateMixin {
   void initState() {
     super.initState();
 
-    // ★★★ 変更点: ここでログイン状態の自動チェックと遷移を行わない ★★★
-    // アニメーションを必ず開始させる
     _logoController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1500), // アニメーションの長さ
@@ -40,7 +38,6 @@ class _StartPageState extends State<StartPage> with TickerProviderStateMixin {
       ),
     );
 
-    // アニメーションを開始。完了後に特別な処理は今はなし。
     _logoController.forward();
   }
 
@@ -52,6 +49,12 @@ class _StartPageState extends State<StartPage> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    // ★ 画面の幅を取得
+    final screenWidth = MediaQuery.of(context).size.width;
+    // ★ ボタンの目標幅を設定（例: 画面幅の70%）
+    // 必要に応じて、minWidth, maxWidth を設定して最小・最大サイズを制御することも可能です。
+    final double buttonWidth = screenWidth * 0.7; // 画面幅の70%
+
     return Scaffold(
       body: Stack(
         children: [
@@ -76,67 +79,72 @@ class _StartPageState extends State<StartPage> with TickerProviderStateMixin {
                 const SizedBox(height: 90),
                 // スタートボタン（アニメーションで包む）
                 AnimatedBuilder(
-                  animation: _logoFadeAnimation, // フェードアニメーションをボタンのスケールにも利用
+                  animation: _logoFadeAnimation,
                   builder: (context, child) {
                     return Transform.scale(
                       scale: _logoFadeAnimation.value,
                       child: child,
                     );
                   },
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.orangeAccent,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: const BorderRadius.all(
-                          Radius.circular(15),
-                        ),
-                        side: const BorderSide(
-                          color: Color.fromARGB(255, 136, 89, 2),
-                          width: 2,
-                        ),
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 70,
-                        vertical: 25,
-                      ),
-                      elevation: 15,
-                      shadowColor: const Color.fromARGB(
-                        255,
-                        62,
-                        34,
-                        0,
-                      ).withAlpha((0.1 * 255).toInt()),
-                    ),
-                    onPressed: () {
-                      // ★★★ ここが修正点: 「はじめる」ボタンの遷移ロジック ★★★
-                      final user = FirebaseAuth.instance.currentUser;
-                      if (user != null) {
-                        // ログイン済みの場合、HomePageへ遷移
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const HomePage(),
+                  // ★ ここをSizedBoxでラップして幅を制御
+                  child: SizedBox(
+                    // ★追加
+                    width: buttonWidth, // ★変更: 計算した幅を適用
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.orangeAccent,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: const BorderRadius.all(
+                            Radius.circular(15),
                           ),
-                        );
-                      } else {
-                        // 未ログインの場合、AuthScreenへ遷移
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const AuthScreen(),
+                          side: const BorderSide(
+                            color: Color.fromARGB(255, 136, 89, 2),
+                            width: 2,
                           ),
-                        );
-                      }
-                    },
-                    child: const Text(
-                      "はじめる",
-                      style: TextStyle(
-                        fontSize: 40,
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
+                        ),
+                        // padding: const EdgeInsets.symmetric( // ★ paddingは削除または調整
+                        //   horizontal: 70, // 幅はSizedBoxで指定するため、水平パディングは不要に
+                        //   vertical: 25,
+                        // ),
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 25,
+                        ), // 垂直パディングのみ維持
+                        elevation: 15,
+                        shadowColor: const Color.fromARGB(
+                          255,
+                          62,
+                          34,
+                          0,
+                        ).withAlpha((0.1 * 255).toInt()),
+                      ),
+                      onPressed: () {
+                        final user = FirebaseAuth.instance.currentUser;
+                        if (user != null) {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const HomePage(),
+                            ),
+                          );
+                        } else {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const AuthScreen(),
+                            ),
+                          );
+                        }
+                      },
+                      child: const Text(
+                        "はじめる",
+                        style: TextStyle(
+                          fontSize: 40,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
-                  ),
+                  ), // ★SizedBoxの閉じタグを追加
                 ),
               ],
             ),

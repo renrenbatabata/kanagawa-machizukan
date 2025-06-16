@@ -21,6 +21,10 @@ class ZukanListContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 画面サイズを取得
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
     // 現在選択されているカテゴリに対応するコンテナのメインカラーを取得します。
     // もし色が見つからない場合は、デフォルトでAppColors.orangeを使用します。
     final Color currentContainerColor =
@@ -66,29 +70,29 @@ class ZukanListContainer extends StatelessWidget {
           // showFlowerPromptMessageがtrueの場合のみ表示されます。
           if (showFlowerPromptMessage)
             Padding(
-              padding: const EdgeInsets.all(20.0), // 全体にパディングを適用
+              padding: EdgeInsets.all(screenWidth * 0.05), // 画面幅に応じたパディング
               child: Column(
                 // メッセージの内容を縦に並べる
                 children: [
                   Icon(
                     Icons.camera_alt,
-                    size: 50,
+                    size: screenWidth * 0.12, // 画面幅に応じたアイコンサイズ
                     color: AppColors.white,
                   ), // カメラアイコン
-                  const SizedBox(height: 10), // スペース
+                  SizedBox(height: screenHeight * 0.015), // 画面高さに応じたスペース
                   Text(
                     '🌸 お花をさつえいして ずかんにとうろくしよう！ 🌸', // メッセージテキスト
                     textAlign: TextAlign.center, // テキストを中央揃えにする
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: screenWidth * 0.045, // 画面幅に応じたフォントサイズ
                       color: AppColors.white, // 文字色
                       fontWeight: FontWeight.bold, // 太字
                     ),
                   ),
-                  const SizedBox(height: 10), // スペース
+                  SizedBox(height: screenHeight * 0.015), // 画面高さに応じたスペース
                   Image.asset(
                     'images/kame_pointing_camera.png',
-                    height: 100,
+                    height: screenHeight * 0.15, // 画面高さに応じた画像サイズ
                   ), // 亀のイラスト画像
                 ],
               ),
@@ -101,14 +105,14 @@ class ZukanListContainer extends StatelessWidget {
               child: Center(
                 // 内容を中央に配置
                 child: Padding(
-                  padding: const EdgeInsets.all(20.0), // 全体にパディングを適用
+                  padding: EdgeInsets.all(screenWidth * 0.05), // 画面幅に応じたパディング
                   child: Text(
                     selectedCategory == "すべて"
                         ? 'まだ何も発見されていません。\n新しい発見をしてみよう！' // 「すべて」カテゴリでアイテムがない場合
                         : 'このカテゴリにはまだ発見されたアイテムがありません。\n新しい発見をしてみよう！', // 特定カテゴリでアイテムがない場合
                     textAlign: TextAlign.center, // テキストを中央揃えにする
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: screenWidth * 0.045, // 画面幅に応じたフォントサイズ
                       color: AppColors.white.withOpacity(0.8), // 文字色と透明度
                     ),
                   ),
@@ -122,10 +126,10 @@ class ZukanListContainer extends StatelessWidget {
               // 親ウィジェットの残りのスペースをすべて占める
               child: ListView.builder(
                 // スクロール可能なリストを作成
-                padding: const EdgeInsets.only(
+                padding: EdgeInsets.only(
                   top: 0.0,
-                  bottom: 20.0,
-                ), // 上と下のパディング
+                  bottom: screenHeight * 0.02, // 画面高さに応じた下のパディング
+                ),
                 itemCount: filteredItems.length, // リストのアイテム数
                 itemBuilder: (context, index) {
                   // 各リストアイテム（ZukanCard）の生成
