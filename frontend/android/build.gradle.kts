@@ -19,3 +19,7 @@ subprojects {
 tasks.register<Delete>("clean") {
     delete(rootProject.layout.buildDirectory)
 }
+
+buildscript {
+    extra["kotlin_version"] = "2.1.0" // ここも 2.1.0 に変更
+}

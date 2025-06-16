@@ -30,6 +30,9 @@ dependencies:
   google_sign_in: ^6.3.0
   flutter_dotenv: ^5.1.0
   webview_flutter: ^4.9.0
+  image_picker: ^1.1.0 # カメラ・ギャラリーアクセス用
+  web_socket_channel: ^2.4.0 # WebSocket通信用
+  cached_network_image: ^3.3.1 # 画像キャッシュ表示用
 
 dev_dependencies:
   flutter_test:
