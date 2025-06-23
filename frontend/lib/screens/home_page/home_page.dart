@@ -10,6 +10,7 @@ import 'package:frontend/screens/post_page/timeline_screen.dart';
 import 'package:http/http.dart' as http; // HTTPリクエスト用
 import 'dart:convert'; // JSONデコード用
 import 'package:frontend/screens/quiz_page/quiz_data.dart'; // QuizQuestionモデルをインポート
+import 'package:frontend/screens/auth_page/auth_service.dart'; // AuthServiceをインポート
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -21,8 +22,9 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   // データの状態管理
   QuizQuestion? _dailyQuestion;
-  double? _overallProgressPercent; // ★ 変更: 総合パーセンテージを直接保持
-  Map<String, Map<String, int>> _categoryCounts = {}; // ★ 変更: 各カテゴリのカウントを保持
+  // 初期値を設定し、nullの可能性を減らす
+  double _overallProgressPercent = 0.0; // デフォルト値を0.0に設定
+  Map<String, Map<String, int>> _categoryCounts = {}; // デフォルトで空のマップに設定
   bool _isLoading = true;
   String? _errorMessage;
 
@@ -32,34 +34,14 @@ class _HomePageState extends State<HomePage> {
     _fetchTopPageData(); // 画面初期化時にAPIを叩く
   }
 
-  // エラーダイアログを表示するメソッド
-  Future<void> _showErrorDialog(BuildContext context, String message) async {
-    return showDialog<void>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('エラー'),
-          content: Text(message),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('OK'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   // ★★★ バックエンドから /top エンドポイントのデータを取得する関数 ★★★
   Future<void> _fetchTopPageData() async {
     setState(() {
       _isLoading = true;
       _errorMessage = null;
       _dailyQuestion = null; // データをリセット
-      _overallProgressPercent = null;
+      // ここで初期化することで、API失敗時もKanagawaLoveAreaにデフォルト値が渡る
+      _overallProgressPercent = 0.0;
       _categoryCounts = {};
     });
 
@@ -69,70 +51,136 @@ class _HomePageState extends State<HomePage> {
         _errorMessage = "APIのURLが設定されていません。";
         _isLoading = false;
       });
-      _showErrorDialog(context, "APIのURLが設定されていません。");
       return;
     }
-    final uri = Uri.parse('$baseUrl/top'); // /top エンドポイント
+
+    final String? userId = AuthService().currentUserId;
+    if (userId == null) {
+      setState(() {
+        _errorMessage = "ログインしていません。ログインして図鑑の進捗とクイズを取得しましょう！";
+        _isLoading = false;
+      });
+      return;
+    }
+
+    final uri = Uri.parse(
+      '$baseUrl/top',
+    ).replace(queryParameters: {'userId': userId});
 
     try {
-      final response = await http.get(uri);
+      final response = await http.post(uri);
+
+      debugPrint('--- API Response Debug for /top ---');
+      debugPrint('Request URL: $uri');
+      debugPrint('Response Status Code: ${response.statusCode}');
+      debugPrint('Response Body: ${response.body}');
+      debugPrint('--- End API Response Debug ---');
 
       if (response.statusCode == 200) {
-        final Map<String, dynamic> responseData = jsonDecode(response.body);
+        final dynamic decodedData = jsonDecode(response.body);
 
-        // クイズデータのパース
-        final quizJson = responseData['quiz'];
-        if (quizJson != null) {
-          final QuizQuestion fetchedQuestion = QuizQuestion.fromJson(quizJson);
-          // バックエンドが1問返す場合はこれ
-          _dailyQuestion = fetchedQuestion;
-        } else {
-          _errorMessage = (_errorMessage ?? '') + 'クイズデータが見つかりません。';
-        }
-
-        // ★ 変更: countデータのパース
-        final countData = responseData['count'];
-        if (countData != null && countData is Map<String, dynamic>) {
-          // 総合パーセンテージ
-          final percent = countData['percent'];
-          if (percent != null && (percent is double || percent is int)) {
-            _overallProgressPercent = (percent as num).toDouble();
-          } else {
-            _errorMessage =
-                (_errorMessage ?? '') + '\n総合パーセンテージデータが見つからないか無効です。';
-          }
-
-          // 各カテゴリのカウントデータをマップに格納
-          final Map<String, Map<String, int>> tempCategoryCounts = {};
-          final List<String> categories = ['turtle', 'flower', 'shrine'];
-          for (var category in categories) {
-            final categoryMap = countData[category];
-            if (categoryMap != null && categoryMap is Map<String, dynamic>) {
-              final count = categoryMap['count'];
-              final all = categoryMap['all'];
-              if (count != null && count is int && all != null && all is int) {
-                tempCategoryCounts[category] = {'count': count, 'all': all};
-              } else {
-                _errorMessage =
-                    (_errorMessage ?? '') + '\n$categoryカテゴリのカウントデータが無効です。';
-              }
+        if (decodedData is Map<String, dynamic>) {
+          // レスポンスがMapの場合（これが今回のログと一致する形式）
+          final quizJson = decodedData['quiz'];
+          // debugPrint('Parsed Quiz Data (from Map): $quizJson');
+          if (quizJson != null) {
+            // quizJsonがMapでもListでも対応できるように修正
+            if (quizJson is Map<String, dynamic>) {
+              _dailyQuestion = QuizQuestion.fromJson(quizJson);
+              debugPrint('クイズの中${_dailyQuestion?.questionText}');
+            } else if (quizJson is List && quizJson.isNotEmpty) {
+              _dailyQuestion = QuizQuestion.fromJson(quizJson[0]);
+              // debugPrint('クイズの中（リスト形式）${_dailyQuestion?.questionText}');
             } else {
-              _errorMessage =
-                  (_errorMessage ?? '') + '\n$categoryカテゴリデータが見つかりません。';
+              _errorMessage = (_errorMessage ?? '') + 'クイズデータが見つからないか無効です。';
+              debugPrint('Error: Quiz data is empty or invalid in Map.');
             }
+          } else {
+            _errorMessage = (_errorMessage ?? '') + 'クイズデータが見つかりません。';
           }
-          _categoryCounts = tempCategoryCounts;
+
+          final countData = decodedData['count'];
+          debugPrint('Parsed Count Data (from Map): $countData');
+          if (countData != null && countData is Map<String, dynamic>) {
+            final percent = countData['percent'];
+            // percentがnullまたは無効な場合は0.0にする
+            if (percent != null && (percent is double || percent is int)) {
+              _overallProgressPercent = (percent as num).toDouble();
+            } else {
+              _overallProgressPercent = 0.0; // 無効な場合は0.0に設定
+              _errorMessage =
+                  (_errorMessage ?? '') +
+                  '\n総合パーセンテージデータが見つからないか無効です。0%に設定しました。';
+            }
+
+            final Map<String, Map<String, int>> tempCategoryCounts = {};
+            final List<String> categories = ['turtle', 'flower', 'shrine'];
+            for (var category in categories) {
+              final categoryMap = countData[category];
+              debugPrint(
+                'Parsed Category "$category" Data (from Map): $categoryMap',
+              );
+              if (categoryMap != null && categoryMap is Map<String, dynamic>) {
+                final count = categoryMap['count'];
+                final all = categoryMap['all'];
+                if (count != null &&
+                    count is int &&
+                    all != null &&
+                    all is int) {
+                  tempCategoryCounts[category] = {'count': count, 'all': all};
+                } else {
+                  // count, all のどちらかが無効な場合は0で初期化
+                  tempCategoryCounts[category] = {'count': 0, 'all': 0};
+                  _errorMessage =
+                      (_errorMessage ?? '') +
+                      '\n$categoryカテゴリのカウントデータが無効です。0で初期化しました。';
+                }
+              } else {
+                // categoryMap が null の場合は0で初期化
+                tempCategoryCounts[category] = {'count': 0, 'all': 0};
+                _errorMessage =
+                    (_errorMessage ?? '') +
+                    '\n$categoryカテゴリデータが見つかりません。0で初期化しました。';
+              }
+            }
+            _categoryCounts = tempCategoryCounts; // ここで_categoryCountsがセットされる
+          } else {
+            // countDataがnullまたは無効な場合は、_overallProgressPercentと_categoryCountsをデフォルト値にリセット
+            _overallProgressPercent = 0.0;
+            _categoryCounts = {};
+            _errorMessage =
+                (_errorMessage ?? '') + '\nカウントデータが見つからないか無効です。0%としました。';
+          }
+        } else if (decodedData is List) {
+          // レスポンスがListの場合（トップレベルがクイズリストの場合）
+          if (decodedData.isNotEmpty &&
+              decodedData[0] is Map<String, dynamic>) {
+            _dailyQuestion = QuizQuestion.fromJson(decodedData[0]);
+            debugPrint(
+              'Parsed Daily Quiz Data (from List): ${_dailyQuestion?.questionText}',
+            );
+          } else {
+            _errorMessage = (_errorMessage ?? '') + 'クイズデータが見つからないか無効です。';
+            debugPrint('Error: Quiz data is empty or not a Map in list.');
+          }
+          // リスト形式の場合、カウントデータは別途取得するか、APIレスポンスの変更が必要
+          _overallProgressPercent = 0.0; // デフォルト値を0.0に設定
+          _categoryCounts = {}; // デフォルトで空のマップに設定
+          // このケースではcountデータが存在しないので、エラーメッセージは不要
         } else {
-          _errorMessage = (_errorMessage ?? '') + '\nカウントデータが見つからないか無効です。';
+          // どちらの形式でもない場合
+          _errorMessage = 'APIレスポンスの形式が無効です。';
+          debugPrint('Error: API response is neither a List nor a Map.');
         }
       } else {
         _errorMessage = 'データの取得に失敗しました: ${response.statusCode}';
         debugPrint('HomePage APIエラー: ${response.body}');
       }
     } catch (e) {
-      _errorMessage = 'ネットワークエラー: $e';
+      _errorMessage = 'ネットワークエラーまたはJSONパースエラー: $e';
       debugPrint('HomePage 通信エラー: $e');
     } finally {
+      // 必ずsetStateを呼んでUIを更新し、ローディングを解除
       setState(() {
         _isLoading = false;
       });
@@ -148,6 +196,8 @@ class _HomePageState extends State<HomePage> {
       debugPrint('✅ ADMOB_BANNER_ID: $admobId');
     }
 
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       body: Column(
         children: [
@@ -156,35 +206,34 @@ class _HomePageState extends State<HomePage> {
             child: SingleChildScrollView(
               child: Column(
                 children: [
-                  const SizedBox(height: 16),
-                  // DailyQuizCardにデータを渡す
+                  SizedBox(height: screenHeight * 0.02),
                   DailyQuizCard(
                     dailyQuestion: _dailyQuestion,
                     isLoading: _isLoading,
                     errorMessage: _errorMessage,
-                    onRetry: _fetchTopPageData, // 再試行ボタンで親の関数を呼ぶ
+                    onRetry: _fetchTopPageData,
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: screenHeight * 0.02),
+                  // SizedBox(
+                  //   height: screenHeight * 0.35,
+                  //   child: const TimelineScreen(),
+                  // ),
+                  SizedBox(height: screenHeight * 0.02),
                   SizedBox(
-                    height: 400, // タイムラインが表示される高さを調整
-                    child: const TimelineScreen(), // ここにタイムライン画面を配置
+                    height: screenHeight * 0.70,
+                    child: const XOfficialNoticeScreen(),
                   ),
-                  SizedBox(height: 750, child: const XOfficialNoticeScreen()),
-                  const SizedBox(height: 16),
-
-                  // ★ KanagawaLoveAreaにデータを渡す
+                  SizedBox(height: screenHeight * 0.02),
                   KanagawaLoveArea(
-                    overallProgressPercent:
-                        _overallProgressPercent, // Javaから受け取ったパーセンテージを渡す
-                    categoryCounts: _categoryCounts, // 各カテゴリのカウントデータを渡す
-                    isLoading: _isLoading, // ラブ度もロード中状態を渡す
-                    errorMessage: _errorMessage, // エラーメッセージも渡す
-                    onRetry: _fetchTopPageData, // リトライ用コールバック
+                    overallProgressPercent: _overallProgressPercent / 100.0,
+                    categoryCounts: _categoryCounts,
+                    isLoading: _isLoading,
+                    errorMessage: _errorMessage,
+                    onRetry: _fetchTopPageData,
                   ),
-                  AdBanner(
-                    adUnitId: admobId!, // ホーム画面用のテストID
-                  ),
-                  const SizedBox(height: 10),
+                  SizedBox(height: screenHeight * 0.02),
+                  AdBanner(adUnitId: admobId!),
+                  SizedBox(height: screenHeight * 0.02),
                 ],
               ),
             ),
